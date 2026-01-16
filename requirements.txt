@@ -1,0 +1,29 @@
+# Core MCP Server Dependencies
+# These are the direct dependencies required by the MDM MCP Server
+# Transitive dependencies will be resolved automatically by pip
+
+# MCP Framework
+fastmcp>=2.14.0
+
+# Web Framework (required by fastmcp)
+fastapi>=0.121.0
+uvicorn>=0.38.0
+
+# Data Validation & Settings
+pydantic>=2.12.0
+pydantic-settings>=2.12.0
+
+# Environment & Configuration
+python-dotenv>=1.2.0
+
+# HTTP Client & Authentication
+requests>=2.32.0
+httpx>=0.28.0
+PyJWT>=2.10.0
+urllib3>=2.6.3
+Authlib>=1.6.0
+
+# Testing Dependencies
+pytest>=8.3.0
+pytest-cov>=6.0.0
+pytest-mock>=3.14.0

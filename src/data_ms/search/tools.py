@@ -1,0 +1,224 @@
+# Copyright [2026] [IBM]
+# Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+# See the LICENSE file in the project root for license information.
+
+"""
+Search tools for IBM MDM MCP server.
+"""
+
+import logging
+from typing import Optional
+
+from fastmcp import Context
+from .service import SearchService
+from .tool_models import SearchResponse, SearchRecordsRequest, SearchRecordsResponse, SearchErrorResponse
+
+logger = logging.getLogger(__name__)
+
+_search_service: Optional[SearchService] = None
+
+
+def get_search_service() -> SearchService:
+    """Get or create the search service instance."""
+    global _search_service
+    if _search_service is None:
+        _search_service = SearchService()
+    return _search_service
+
+
+def search_records(
+    ctx: Context,
+    request: SearchRecordsRequest
+) -> SearchResponse:
+    """
+    Searches for Master Data(records, entities, relationships, or hierarchy nodes) in IBM Master Data Management with support for complex nested AND/OR queries.
+    
+    **IMPORTANT PREREQUISITE**: You MUST ALWAYS call get_data_model() with format="enhanced_compact"
+    BEFORE using this tool. The data model provides essential information about:
+    - Available entity types and record types to search
+    - Searchable attributes and their property paths
+    - Attribute data types and constraints
+    
+    Without the data model, you cannot construct valid search queries.
+    
+    This tool allows you to construct sophisticated search queries with nested conditions
+    using AND/OR logic to find records, entities, relationships, or hierarchy nodes.
+    
+    Args:
+        ctx: MCP Context object (automatically injected) - provides session information
+        request: SearchRecordsRequest containing:
+            - search_type: Type of data to search for. Options: "record", "entity", "relationship", "hierarchy_node"
+            - query: The search query object containing expressions and operations. Structure:
+                {
+                    "expressions": [<list of Expression objects>],
+                    "operation": "and" | "or"  (optional, default: "and")
+                }
+                
+                Each Expression can be:
+                - Simple expression: {"property": "path.to.field", "condition": "equal", "value": "search_value"}
+                - Nested expression: {"operation": "or", "expressions": [<list of expressions>]}
+                
+                Available conditions:
+                - "equal", "not_equal": Exact match or non-match
+                - "greater_than", "greater_than_equal", "less_than", "less_than_equal": Numeric comparisons
+                - "starts_with", "ends_with", "contains", "not_contains": String pattern matching
+                - "fuzzy": Fuzzy text matching
+                - "has_value", "has_no_value": Check for presence/absence of value
+                
+                Property paths use dot notation (e.g., "legal_name.last_name", "address.city", "contact.email")
+            - filters: Optional list of filters to narrow down results. Each filter has:
+                {
+                    "type": "record" | "entity" | "source" | "relationship" | "data_quality" | "hierarchy_type" | "hierarchy_number" | "group",
+                    "values": [<list of string values>],  (for most filter types)
+                    "data_quality_issues": [<list of issues>]  (for data_quality type)
+                }
+                
+                Data quality issues: "potential_match", "potential_overlay", "user_tasks_only", "same_source_only", "potential_duplicate"
+            - limit: Maximum number of results to return (max 50, default: 10)
+            - offset: Number of results to skip for pagination (default: 0)
+            - include_total_count: Whether to include total count in response (default: true)
+            - crn: Cloud Resource Name identifying the tenant (optional, defaults to On-Prem tenant)
+    
+    Returns:
+        Search results containing matched records with pagination info
+    
+    Examples:
+        1. Simple search - Find records with last name "Smith":
+           search_records(
+               request=SearchRecordsRequest(
+                   search_type="record",
+                   query={
+                       "expressions": [
+                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"}
+                       ]
+                   }
+               )
+           )
+        
+        2. Multiple conditions with AND - Last name "Smith" AND city "Boston":
+           search_records(
+               request=SearchRecordsRequest(
+                   search_type="record",
+                   query={
+                       "expressions": [
+                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
+                           {"property": "address.city", "condition": "equal", "value": "Boston"}
+                       ],
+                       "operation": "and"
+                   }
+               )
+           )
+        
+        3. Multiple conditions with OR - Last name "Smith" OR "Jones":
+           search_records(
+               request=SearchRecordsRequest(
+                   search_type="record",
+                   query={
+                       "expressions": [
+                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
+                           {"property": "legal_name.last_name", "condition": "equal", "value": "Jones"}
+                       ],
+                       "operation": "or"
+                   }
+               )
+           )
+        
+        4. Complex nested query - (Last name "Smith" OR "Jones") AND (City "Boston"):
+           search_records(
+               request=SearchRecordsRequest(
+                   search_type="record",
+                   query={
+                       "expressions": [
+                           {
+                               "operation": "or",
+                               "expressions": [
+                                   {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
+                                   {"property": "legal_name.last_name", "condition": "equal", "value": "Jones"}
+                               ]
+                           },
+                           {"property": "address.city", "condition": "equal", "value": "Boston"}
+                       ],
+                       "operation": "and"
+                   }
+               )
+           )
+        
+        5. Search with filters - Find person records with last name "Smith":
+           search_records(
+               request=SearchRecordsRequest(
+                   search_type="record",
+                   query={
+                       "expressions": [
+                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"}
+                       ]
+                   },
+                   filters=[
+                       {"type": "record", "values": ["person"]}
+                   ]
+               )
+           )
+        
+        6. Search with data quality filter - Find potential duplicates:
+           search_records(
+               request=SearchRecordsRequest(
+                   search_type="record",
+                   query={
+                       "expressions": [
+                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"}
+                       ]
+                   },
+                   filters=[
+                       {"type": "data_quality", "data_quality_issues": ["potential_duplicate"]}
+                   ]
+               )
+           )
+        
+        7. Advanced nested query - ((Name "Smith" OR "Jones") AND City "Boston") OR (Name "Brown" AND City "New York"):
+           search_records(
+               request=SearchRecordsRequest(
+                   search_type="record",
+                   query={
+                       "expressions": [
+                           {
+                               "operation": "and",
+                               "expressions": [
+                                   {
+                                       "operation": "or",
+                                       "expressions": [
+                                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
+                                           {"property": "legal_name.last_name", "condition": "equal", "value": "Jones"}
+                                       ]
+                                   },
+                                   {"property": "address.city", "condition": "equal", "value": "Boston"}
+                               ]
+                           },
+                           {
+                               "operation": "and",
+                               "expressions": [
+                                   {"property": "legal_name.last_name", "condition": "equal", "value": "Brown"},
+                                   {"property": "address.city", "condition": "equal", "value": "New York"}
+                               ]
+                           }
+                       ],
+                       "operation": "or"
+                   }
+               )
+           )
+    """
+    service = get_search_service()
+    
+    result = service.search_records(
+        ctx=ctx,
+        search_type=request.search_type,
+        query=request.query,
+        filters=request.filters,
+        limit=request.limit,
+        offset=request.offset,
+        include_total_count=request.include_total_count,
+        crn=request.crn
+    )
+    
+    if "error" in result:
+        return SearchErrorResponse(**result)
+    else:
+        return SearchRecordsResponse(**result)
