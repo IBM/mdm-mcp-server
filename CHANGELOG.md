@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive error handling and logging
 
 #### Tools & Modes
-- **Minimal Mode**: Essential tools (`search_records`, `get_data_model`)
+- **Minimal Mode**: Essential tools (`search_master_data`, `get_data_model`)
 - **Full Mode**: All tools including record/entity retrieval operations
 - **HTTP Mode**: Server mode for testing and development
 - **STDIO Mode**: Integration mode for Claude Desktop and MCP clients
