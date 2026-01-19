@@ -254,7 +254,7 @@ def configure_environment() -> Dict[str, str]:
     
     # Tool mode configuration
     print("\nSelect tool mode:")
-    print("1. Minimal (search_records, get_data_model)")
+    print("1. Minimal (search_master_data, get_data_model)")
     print("2. Full (all tools including record/entity retrieval)")
     
     mode_choice = get_user_input("Enter choice (1 or 2)", "1")

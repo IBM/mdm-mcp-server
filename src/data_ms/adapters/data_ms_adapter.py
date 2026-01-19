@@ -103,7 +103,7 @@ class DataMSAdapter(BaseMDMAdapter):
         self.logger.info(f"Fetching entities for record {record_id} for CRN: {crn}")
         return self.execute_get(endpoint, params)
     
-    def search_records(
+    def search_master_data(
         self,
         search_criteria: Dict[str, Any],
         crn: str,
@@ -112,7 +112,7 @@ class DataMSAdapter(BaseMDMAdapter):
         include_total_count: bool = True
     ) -> Dict[str, Any]:
         """
-        Search for records in the Data Microservice.
+        Search for master data (records, entities, relationships, hierarchy nodes) in the Data Microservice.
         
         Args:
             search_criteria: Search criteria dictionary containing query and filters

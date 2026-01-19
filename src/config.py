@@ -21,7 +21,7 @@ class Config:
     
     # Tools mode configuration
     # Options: "minimal" (default) or "full"
-    # minimal: Only search_records and get_data_model
+    # minimal: Only search_master_data and get_data_model
     # full: All available tools
     MCP_TOOLS_MODE = os.getenv("MCP_TOOLS_MODE", "minimal")
     
