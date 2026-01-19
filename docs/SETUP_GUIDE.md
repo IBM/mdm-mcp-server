@@ -139,12 +139,12 @@ When prompted, you'll need:
 
 ### Minimal Mode (Default)
 Exposes essential tools:
-- `search_records` - Search for records
+- `search_master_data` - Search for master data (records, entities, relationships, hierarchy nodes)
 - `get_data_model` - Retrieve data model schema
 
 ### Full Mode
 Exposes all available tools:
-- `search_records` - Search for records
+- `search_master_data` - Search for master data (records, entities, relationships, hierarchy nodes)
 - `get_data_model` - Retrieve data model schema
 - `get_record` - Get specific record by ID
 - `get_entity` - Get entity by ID

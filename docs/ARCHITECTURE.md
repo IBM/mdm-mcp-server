@@ -39,7 +39,7 @@ The system is organized into three distinct layers with clear boundaries:
 
 ```mermaid
 graph TD
-    A["<b>MCP Protocol Layer</b><br/>(FastMCP Framework)<br/><br/>Entry point for MCP communication"] --> B["<b>Tools Layer</b><br/>(Ports/Presentation)<br/><br/>search_records<br/>get_data_model<br/>MCP Tool Definitions"]
+    A["<b>MCP Protocol Layer</b><br/>(FastMCP Framework)<br/><br/>Entry point for MCP communication"] --> B["<b>Tools Layer</b><br/>(Ports/Presentation)<br/><br/>search_master_data<br/>get_data_model<br/>MCP Tool Definitions"]
     B --> C["<b>Service Layer</b><br/>(Business Logic)<br/><br/>SearchService<br/>ModelService<br/>Validation, Orchestration, Error Handling"]
     C --> D["<b>Adapter Layer</b><br/>(Adapters)<br/><br/>DataMSAdapter<br/>ModelMSAdapter<br/>HTTP Clients & API Communication"]
     D --> E["<b>External IBM MDM APIs</b><br/>(IBM MDM)<br/><br/>Data MS<br/>Model MS"]
@@ -194,7 +194,7 @@ data_ms/
 ```
 
 **Key Tools**:
-- `search_records`: Complex nested AND/OR queries
+- `search_master_data`: Complex nested AND/OR queries for any master data type
 - `get_record`: Retrieve record by ID
 - `get_entity`: Retrieve entity by ID
 - `get_records_entities_by_record_id`: Get entities for a record
@@ -301,7 +301,7 @@ classDiagram
     class SearchService {
         +adapter: DataMSAdapter
         +validate_additional_preconditions(session_id, crn) void
-        +search_records(ctx, search_type, query, filters, limit, offset, include_total_count, crn) Dict
+        +search_master_data(ctx, search_type, query, filters, limit, offset, include_total_count, crn) Dict
         +build_search_criteria(search_type, query, filters) Dict
     }
     
@@ -342,7 +342,7 @@ classDiagram
         +get_entity(entity_id, crn) Dict
         +get_record(record_id, crn) Dict
         +get_record_entities(record_id, crn) Dict
-        +search_records(search_criteria, crn, limit, offset, include_total_count) Dict
+        +search_master_data(search_criteria, crn, limit, offset, include_total_count) Dict
         +create_record(record_data, crn) Dict
         +update_record(record_id, record_data, crn) Dict
         +delete_record(record_id, crn) Dict
@@ -574,7 +574,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Claude as Claude Desktop
-    participant Tool as search_records Tool
+    participant Tool as search_master_data Tool
     participant SearchSvc as SearchService
     participant SessionStore as SessionStore
     participant DataAdapter as DataMSAdapter
@@ -583,9 +583,9 @@ sequenceDiagram
     
     Note over Claude,DataMS: Prerequisite: get_data_model must have been called first
     
-    Claude->>Tool: search_records(search_type, query, filters)
-    Tool->>Tool: Parse SearchRecordsRequest
-    Tool->>SearchSvc: search_records(ctx, search_type, query, filters, ...)
+    Claude->>Tool: search_master_data(search_type, query, filters)
+    Tool->>Tool: Parse SearchMasterDataRequest
+    Tool->>SearchSvc: search_master_data(ctx, search_type, query, filters, ...)
     
     SearchSvc->>SearchSvc: validate_session_and_crn(ctx, crn, check_preconditions=True)
     SearchSvc->>SessionStore: has_fetched_data_model(session_id)
@@ -603,7 +603,7 @@ sequenceDiagram
             Tool-->>Claude: Error: Invalid query structure
         else Validation succeeds
             SearchSvc->>SearchSvc: build_search_criteria(search_type, query, filters)
-            SearchSvc->>DataAdapter: search_records(criteria, crn, limit, offset, ...)
+            SearchSvc->>DataAdapter: search_master_data(criteria, crn, limit, offset, ...)
             
             DataAdapter->>AuthMgr: get_auth_headers()
             AuthMgr-->>DataAdapter: return auth_headers
@@ -627,11 +627,11 @@ sequenceDiagram
 **Responsibility**: MCP tool interface
 
 ```python
-def search_records(ctx: Context, request: SearchRecordsRequest) -> SearchResponse:
+def search_master_data(ctx: Context, request: SearchMasterDataRequest) -> SearchResponse:
     """MCP tool interface - handles request/response models."""
     service = get_search_service()
-    result = service.search_records(...)
-    return SearchRecordsResponse(**result)
+    result = service.search_master_data(...)
+    return SearchMasterDataResponse(**result)
 ```
 
 **Characteristics**:
@@ -647,7 +647,7 @@ def search_records(ctx: Context, request: SearchRecordsRequest) -> SearchRespons
 
 ```python
 class SearchService(BaseService):
-    def search_records(self, ctx, search_type, query, filters, ...):
+    def search_master_data(self, ctx, search_type, query, filters, ...):
         # 1. Validate session and CRN (with precondition check)
         session_id, crn, tenant_id = self.validate_session_and_crn(
             ctx, crn, check_preconditions=True
@@ -660,7 +660,7 @@ class SearchService(BaseService):
         criteria = self.build_search_criteria(...)
         
         # 4. Execute via adapter
-        return self.adapter.search_records(criteria, crn, ...)
+        return self.adapter.search_master_data(criteria, crn, ...)
 ```
 
 **Characteristics**:
@@ -676,7 +676,7 @@ class SearchService(BaseService):
 
 ```python
 class DataMSAdapter(BaseMDMAdapter):
-    def search_records(self, search_criteria, crn, limit, offset, ...):
+    def search_master_data(self, search_criteria, crn, limit, offset, ...):
         endpoint = "search"
         params = {"crn": crn, "limit": str(limit), ...}
         return self.execute_post(endpoint, search_criteria, params)
@@ -720,8 +720,8 @@ class SearchFilter(BaseModel):
 #### Tool Models ([`data_ms/search/tool_models.py`](../src/data_ms/search/tool_models.py))
 
 ```python
-class SearchRecordsRequest(BaseModel):
-    """Request model for search_records tool."""
+class SearchMasterDataRequest(BaseModel):
+    """Request model for search_master_data tool."""
     search_type: SearchType
     query: Dict[str, Any]
     filters: Optional[List[Dict[str, Any]]] = None
@@ -730,8 +730,8 @@ class SearchRecordsRequest(BaseModel):
     include_total_count: bool = True
     crn: Optional[str] = None
 
-class SearchRecordsResponse(BaseModel):
-    """Success response for search_records tool."""
+class SearchMasterDataResponse(BaseModel):
+    """Success response for search_master_data tool."""
     results: List[Dict[str, Any]]
     total_count: Optional[int] = None
     limit: int
@@ -789,7 +789,7 @@ create_data_model_precondition_error(
 ```python
 try:
     # Service operation
-    result = service.search_records(...)
+    result = service.search_master_data(...)
 except CRNValidationError as e:
     return format_crn_error_response(crn, str(e))
 except ValidationError as e:
@@ -839,8 +839,8 @@ Test component interactions:
 ```python
 def test_search_service_with_adapter(mock_adapter):
     service = SearchService(adapter=mock_adapter)
-    result = service.search_records(...)
-    assert mock_adapter.search_records.called
+    result = service.search_master_data(...)
+    assert mock_adapter.search_master_data.called
 ```
 
 #### 3. Fixtures
@@ -948,7 +948,7 @@ MCP_TOOLS_MODE=minimal
 ```
 
 **Available Tools**:
-- `search_records`: Search for master data with complex queries
+- `search_master_data`: Search for master data (records, entities, relationships, hierarchy nodes) with complex queries
 - `get_data_model`: Retrieve data model schema
 
 **Use Case**: Production environments with focused functionality

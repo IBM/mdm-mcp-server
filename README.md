@@ -200,7 +200,7 @@ MCP_TOOLS_MODE=minimal
 ```
 
 **Tool Mode Options:**
-- `minimal` (default): Exposes essential tools (`search_records`, `get_data_model`)
+- `minimal` (default): Exposes essential tools (`search_master_data`, `get_data_model`)
 - `full`: Exposes all tools including `get_record`, `get_entity`, `get_records_entities_by_record_id`
 
 ### Step 5: Test the Server (Optional)
@@ -363,7 +363,7 @@ Essential tools for common MDM operations:
 
 | Tool | Description |
 |------|-------------|
-| `search_records` | Search for records in IBM MDM with flexible query parameters |
+| `search_master_data` | Search for master data (records, entities, relationships, hierarchy nodes) in IBM MDM with flexible query parameters |
 | `get_data_model` | Retrieve the complete MDM data model schema |
 
 ### Full Mode
@@ -372,7 +372,7 @@ All available tools including advanced operations:
 
 | Tool | Description |
 |------|-------------|
-| `search_records` | Search for records with advanced filtering |
+| `search_master_data` | Search for master data with advanced filtering |
 | `get_data_model` | Retrieve data model schema |
 | `get_record` | Retrieve a specific record by ID |
 | `get_entity` | Retrieve an entity by ID |
@@ -473,7 +473,7 @@ This project implements a **clean 3-tier layered architecture** inspired by hexa
 
 ```mermaid
 graph TD
-    A["<b>Tools Layer</b><br/>(MCP Interface)<br/><br/>search_records<br/>get_data_model"] --> B["<b>Service Layer</b><br/>(Business Logic)<br/><br/>SearchService<br/>ModelService"]
+    A["<b>Tools Layer</b><br/>(MCP Interface)<br/><br/>search_master_data<br/>get_data_model"] --> B["<b>Service Layer</b><br/>(Business Logic)<br/><br/>SearchService<br/>ModelService"]
     B --> C["<b>Adapter Layer</b><br/>(External APIs)<br/><br/>DataMSAdapter<br/>ModelMSAdapter"]
     C --> D["<b>IBM MDM APIs</b><br/>(IBM MDM)<br/><br/>Data MS<br/>Model MS"]
     
