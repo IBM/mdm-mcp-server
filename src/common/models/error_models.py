@@ -117,7 +117,7 @@ def create_data_model_precondition_error(
     - Searchable attributes and their property paths (e.g., 'legal_name.last_name', etc.)
     - Attribute data types and valid search conditions
 
-    3. Then call search_records() with the same session and properly created search request:
+    3. Then call search_master_data() with the same session and properly created search request:
 
     The data model is essential for constructing valid search queries with correct
     property paths and understanding which fields are searchable.

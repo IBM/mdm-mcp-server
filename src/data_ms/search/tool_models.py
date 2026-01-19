@@ -14,8 +14,8 @@ from typing import Optional, List, Literal, Union
 from pydantic import BaseModel, Field, field_validator
 
 
-class SearchRecordsRequest(BaseModel):
-    """Request model for search_records tool with automatic validation."""
+class SearchMasterDataRequest(BaseModel):
+    """Request model for search_master_data tool with automatic validation."""
     
     search_type: Literal["record", "relationship", "entity", "hierarchy_node"] = Field(
         ...,
@@ -70,8 +70,8 @@ class SearchRecordsRequest(BaseModel):
         return v
 
 
-class SearchRecordsResponse(BaseModel):
-    """Response model for successful search_records operations."""
+class SearchMasterDataResponse(BaseModel):
+    """Response model for successful search_master_data operations."""
     
     results: List[dict] = Field(
         default_factory=list,
@@ -134,4 +134,8 @@ class SearchErrorResponse(BaseModel):
 
 
 # Type alias for search response
-SearchResponse = Union[SearchRecordsResponse, SearchErrorResponse]
+SearchResponse = Union[SearchMasterDataResponse, SearchErrorResponse]
+
+# Backward compatibility aliases
+SearchRecordsRequest = SearchMasterDataRequest
+SearchRecordsResponse = SearchMasterDataResponse

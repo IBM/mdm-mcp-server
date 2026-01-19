@@ -11,7 +11,7 @@ from typing import Optional
 
 from fastmcp import Context
 from .service import SearchService
-from .tool_models import SearchResponse, SearchRecordsRequest, SearchRecordsResponse, SearchErrorResponse
+from .tool_models import SearchResponse, SearchMasterDataRequest, SearchMasterDataResponse, SearchErrorResponse
 
 logger = logging.getLogger(__name__)
 
@@ -26,12 +26,14 @@ def get_search_service() -> SearchService:
     return _search_service
 
 
-def search_records(
+def search_master_data(
     ctx: Context,
-    request: SearchRecordsRequest
+    request: SearchMasterDataRequest
 ) -> SearchResponse:
     """
-    Searches for Master Data(records, entities, relationships, or hierarchy nodes) in IBM Master Data Management with support for complex nested AND/OR queries.
+    Searches for ANY type of Master Data in IBM MDM - use search_type parameter to specify: "record", "entity", "relationship", or "hierarchy_node".
+    
+    Supports complex nested AND/OR queries for searching records, entities, relationships, or hierarchy nodes.
     
     **IMPORTANT PREREQUISITE**: You MUST ALWAYS call get_data_model() with format="enhanced_compact"
     BEFORE using this tool. The data model provides essential information about:
@@ -84,8 +86,8 @@ def search_records(
     
     Examples:
         1. Simple search - Find records with last name "Smith":
-           search_records(
-               request=SearchRecordsRequest(
+           search_master_data(
+               request=SearchMasterDataRequest(
                    search_type="record",
                    query={
                        "expressions": [
@@ -96,8 +98,8 @@ def search_records(
            )
         
         2. Multiple conditions with AND - Last name "Smith" AND city "Boston":
-           search_records(
-               request=SearchRecordsRequest(
+           search_master_data(
+               request=SearchMasterDataRequest(
                    search_type="record",
                    query={
                        "expressions": [
@@ -110,8 +112,8 @@ def search_records(
            )
         
         3. Multiple conditions with OR - Last name "Smith" OR "Jones":
-           search_records(
-               request=SearchRecordsRequest(
+           search_master_data(
+               request=SearchMasterDataRequest(
                    search_type="record",
                    query={
                        "expressions": [
@@ -124,8 +126,8 @@ def search_records(
            )
         
         4. Complex nested query - (Last name "Smith" OR "Jones") AND (City "Boston"):
-           search_records(
-               request=SearchRecordsRequest(
+           search_master_data(
+               request=SearchMasterDataRequest(
                    search_type="record",
                    query={
                        "expressions": [
@@ -144,8 +146,8 @@ def search_records(
            )
         
         5. Search with filters - Find person records with last name "Smith":
-           search_records(
-               request=SearchRecordsRequest(
+           search_master_data(
+               request=SearchMasterDataRequest(
                    search_type="record",
                    query={
                        "expressions": [
@@ -159,8 +161,8 @@ def search_records(
            )
         
         6. Search with data quality filter - Find potential duplicates:
-           search_records(
-               request=SearchRecordsRequest(
+           search_master_data(
+               request=SearchMasterDataRequest(
                    search_type="record",
                    query={
                        "expressions": [
@@ -174,8 +176,8 @@ def search_records(
            )
         
         7. Advanced nested query - ((Name "Smith" OR "Jones") AND City "Boston") OR (Name "Brown" AND City "New York"):
-           search_records(
-               request=SearchRecordsRequest(
+           search_master_data(
+               request=SearchMasterDataRequest(
                    search_type="record",
                    query={
                        "expressions": [
@@ -207,7 +209,7 @@ def search_records(
     """
     service = get_search_service()
     
-    result = service.search_records(
+    result = service.search_master_data(
         ctx=ctx,
         search_type=request.search_type,
         query=request.query,
@@ -221,4 +223,4 @@ def search_records(
     if "error" in result:
         return SearchErrorResponse(**result)
     else:
-        return SearchRecordsResponse(**result)
+        return SearchMasterDataResponse(**result)

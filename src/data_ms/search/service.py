@@ -60,7 +60,7 @@ class SearchService(BaseService):
     - HTTP communication with Data Microservice
     - Search endpoint operations
     
-    The search_records function in tools.py uses these methods to perform searches.
+    The search_master_data function in tools.py uses these methods to perform searches.
     """
     
     def __init__(self, adapter: Optional[DataMSAdapter] = None):
@@ -252,7 +252,7 @@ class SearchService(BaseService):
         search_criteria_dict = search_criteria.model_dump(exclude_none=True)
         
         # Use adapter for search request
-        return self.adapter.search_records(
+        return self.adapter.search_master_data(
             search_criteria_dict,
             validated_crn,
             limit,
@@ -260,7 +260,7 @@ class SearchService(BaseService):
             include_total_count
         )
     
-    def search_records(
+    def search_master_data(
         self,
         ctx: Context,
         search_type: Literal["record", "relationship", "entity", "hierarchy_node"],

@@ -413,7 +413,7 @@ def validate_search_query(
     if not data_model:
         raise ValueError(
             f"No data model cached for session {session_id}. "
-            "You must call get_data_model() before using search_records()."
+            "You must call get_data_model() before using search_master_data()."
         )
     
     # Create validator

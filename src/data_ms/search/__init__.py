@@ -16,7 +16,7 @@ from .models import (
     SearchResponse
 )
 
-from .tools import search_records
+from .tools import search_master_data
 
 __all__ = [
     'Expression',
@@ -26,7 +26,7 @@ __all__ = [
     'SearchResult',
     'PaginationLink',
     'SearchResponse',
-    'search_records'
+    'search_master_data'
 ]
 
 

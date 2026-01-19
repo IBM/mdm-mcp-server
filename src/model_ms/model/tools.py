@@ -35,7 +35,7 @@ def get_data_model(
     Data model defines the different attributes and their types for the tenant.
     It also includes whether an attribute is searchable or not.
     
-    **IMPORTANT**: This tool MUST be called before using search_records. The search tool
+    **IMPORTANT**: This tool MUST be called before using search_master_data. The search tool
     requires knowledge of the data model to construct valid property paths and understand
     available search fields.
     
@@ -72,7 +72,7 @@ def get_data_model(
         )
         
         # The session is automatically tracked via the Context object
-        # Now you can use search_records in the same session
+        # Now you can use search_master_data in the same session
     """
     service = _get_model_service()
     return service.get_data_model(ctx, crn, format)
