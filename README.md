@@ -32,6 +32,7 @@ This MCP server enables AI assistants like Claude to interact with IBM MDM servi
 - [Integration with Claude Desktop](#integration-with-claude-desktop)
 - [Running the Server](#running-the-server)
 - [Available Tools](#available-tools)
+- [Sample Queries](#sample-queries)
 - [Testing](#testing)
 - [Architecture](#architecture)
 - [Troubleshooting](#troubleshooting)
@@ -50,6 +51,8 @@ Before you begin, ensure you have:
 - **Claude Desktop** (Optional) - [Download here](https://claude.ai/download) if you want AI assistant integration
 
 > 📖 **Need help getting started?** See the detailed [Setup Guide](docs/SETUP_GUIDE.md) for step-by-step instructions on installing prerequisites and obtaining IBM MDM credentials.
+
+> 🔐 **Security Note (IBM Cloud only):** Generate a dedicated API key specifically for this MCP server - do not reuse existing API keys from other applications.
 
 ---
 
@@ -376,6 +379,28 @@ All available tools including advanced operations:
 | `get_records_entities_by_record_id` | Get all entities associated with a record |
 
 Enable full mode by setting `MCP_TOOLS_MODE=full` in your environment configuration.
+
+---
+
+## Sample Queries
+
+Want to see what you can do with this MCP server? Check out our comprehensive [Sample Queries Guide](docs/SAMPLES.md) which includes:
+
+- 📊 **Report Templates** - Ready-to-use templates for dashboards and visualizations
+- 🔄 **Common Usage Patterns** - Real-world scenarios with concrete examples
+- 🎯 **Query Examples** - From basic searches to complex nested queries
+- 📈 **Analytics Queries** - Distribution analysis, comparisons, and data quality reports
+- 💡 **Best Practices** - Tips to prevent hallucination and ensure accurate results
+
+**Quick Examples:**
+```
+"What entity types and searchable fields are available in my MDM system?"
+"Find customer records where status equals active and region equals northeast"
+"Create a regional distribution dashboard for customer records"
+"Generate a data quality dashboard showing duplicates and missing data"
+```
+
+See the [full samples documentation](docs/SAMPLES.md) for detailed examples and templates.
 
 ## Testing
 
