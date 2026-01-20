@@ -230,7 +230,9 @@ class SearchService(BaseService):
         validated_crn: str,
         limit: int,
         offset: int,
-        include_total_count: bool
+        include_total_count: bool,
+        include_attributes: Optional[List[str]] = None,
+        exclude_attributes: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Execute the search API request and return raw response.
@@ -241,6 +243,8 @@ class SearchService(BaseService):
             limit: Maximum number of results
             offset: Number of results to skip
             include_total_count: Whether to include total count
+            include_attributes: Optional list of attributes to include in results
+            exclude_attributes: Optional list of attributes to exclude from results
             
         Returns:
             Raw API response data
@@ -257,7 +261,9 @@ class SearchService(BaseService):
             validated_crn,
             limit,
             offset,
-            include_total_count
+            include_total_count,
+            include_attributes,
+            exclude_attributes
         )
     
     def search_master_data(
@@ -269,7 +275,9 @@ class SearchService(BaseService):
         limit: int,
         offset: int,
         include_total_count: bool,
-        crn: Optional[str]
+        crn: Optional[str],
+        include_attributes: Optional[List[str]] = None,
+        exclude_attributes: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Main entry point for search operations with complete error handling.
@@ -289,6 +297,8 @@ class SearchService(BaseService):
             offset: Number of results to skip
             include_total_count: Whether to include total count
             crn: Optional CRN (uses default if None)
+            include_attributes: Optional list of attributes to include in results
+            exclude_attributes: Optional list of attributes to exclude from results
             
         Returns:
             Search results or formatted error response
@@ -313,7 +323,9 @@ class SearchService(BaseService):
                 validated_crn,
                 limit,
                 offset,
-                include_total_count
+                include_total_count,
+                include_attributes,
+                exclude_attributes
             )
             
         except CRNValidationError as e:

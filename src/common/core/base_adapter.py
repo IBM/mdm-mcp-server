@@ -162,6 +162,21 @@ class BaseMDMAdapter(ABC):
         
         return response
     
+    def _log_transaction_id(self, response: requests.Response, method: str, endpoint: str) -> None:
+        """
+        Extract and log transaction ID from response headers.
+        
+        Args:
+            response: The HTTP response object
+            method: HTTP method used (GET, POST, etc.)
+            endpoint: API endpoint called
+        """
+        # IBM MDM API returns transaction ID in X-Correlation-ID header
+        transaction_id = response.headers.get('X-Correlation-ID')
+        
+        if transaction_id:
+            self.logger.info(f"{method} {endpoint} - Transaction ID: {transaction_id}")
+    
     def execute_get(
         self,
         endpoint: str,
@@ -193,6 +208,10 @@ class BaseMDMAdapter(ABC):
         )
         
         response.raise_for_status()
+        
+        # Log transaction ID for tracing
+        self._log_transaction_id(response, 'GET', endpoint)
+        
         return response.json()
     
     def execute_post(
@@ -229,6 +248,10 @@ class BaseMDMAdapter(ABC):
         )
         
         response.raise_for_status()
+        
+        # Log transaction ID for tracing
+        self._log_transaction_id(response, 'POST', endpoint)
+        
         return response.json()
     
     def execute_put(
@@ -265,6 +288,10 @@ class BaseMDMAdapter(ABC):
         )
         
         response.raise_for_status()
+        
+        # Log transaction ID for tracing
+        self._log_transaction_id(response, 'PUT', endpoint)
+        
         return response.json()
     
     def execute_delete(
@@ -298,4 +325,8 @@ class BaseMDMAdapter(ABC):
         )
         
         response.raise_for_status()
+        
+        # Log transaction ID for tracing
+        self._log_transaction_id(response, 'DELETE', endpoint)
+        
         return response.json()

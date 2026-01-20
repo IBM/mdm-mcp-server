@@ -33,7 +33,7 @@ def search_master_data(
     """
     Searches for ANY type of Master Data in IBM MDM - use search_type parameter to specify: "record", "entity", "relationship", or "hierarchy_node".
     
-    Supports complex nested AND/OR queries for searching records, entities, relationships, or hierarchy nodes.
+    Supports complex nested AND/OR queries for searching records, entities, relationships, or hierarchy nodes. Also supports full-text search across all fields using property="*"
     
     **IMPORTANT PREREQUISITE**: You MUST ALWAYS call get_data_model() with format="enhanced_compact"
     BEFORE using this tool. The data model provides essential information about:
@@ -58,6 +58,7 @@ def search_master_data(
                 
                 Each Expression can be:
                 - Simple expression: {"property": "path.to.field", "condition": "equal", "value": "search_value"}
+                - Full-text expression: {"property": "*", "condition": "contains", "value": "search_value"} - searches ALL fields
                 - Nested expression: {"operation": "or", "expressions": [<list of expressions>]}
                 
                 Available conditions:
@@ -68,6 +69,7 @@ def search_master_data(
                 - "has_value", "has_no_value": Check for presence/absence of value
                 
                 Property paths use dot notation (e.g., "legal_name.last_name", "address.city", "contact.email")
+                **SPECIAL**: Use "*" as property to search across ALL fields (full-text search)
             - filters: Optional list of filters to narrow down results. Each filter has:
                 {
                     "type": "record" | "entity" | "source" | "relationship" | "data_quality" | "hierarchy_type" | "hierarchy_number" | "group",
@@ -96,8 +98,20 @@ def search_master_data(
                    }
                )
            )
-        
-        2. Multiple conditions with AND - Last name "Smith" AND city "Boston":
+       
+       2. Full-text search - Find "Smith" anywhere in entity data (use as fallback if specific search returns 0 results):
+          search_master_data(
+              request=SearchMasterDataRequest(
+                  search_type="entity",
+                  query={
+                      "expressions": [
+                          {"property": "*", "condition": "contains", "value": "Smith"}
+                      ]
+                  }
+              )
+          )
+       
+       3. Multiple conditions with AND - Last name "Smith" AND city "Boston":
            search_master_data(
                request=SearchMasterDataRequest(
                    search_type="record",
@@ -110,22 +124,8 @@ def search_master_data(
                    }
                )
            )
-        
-        3. Multiple conditions with OR - Last name "Smith" OR "Jones":
-           search_master_data(
-               request=SearchMasterDataRequest(
-                   search_type="record",
-                   query={
-                       "expressions": [
-                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
-                           {"property": "legal_name.last_name", "condition": "equal", "value": "Jones"}
-                       ],
-                       "operation": "or"
-                   }
-               )
-           )
-        
-        4. Complex nested query - (Last name "Smith" OR "Jones") AND (City "Boston"):
+       
+       4. Complex nested query - (Last name "Smith" OR "Jones") AND (City "Boston"):
            search_master_data(
                request=SearchMasterDataRequest(
                    search_type="record",
@@ -144,8 +144,8 @@ def search_master_data(
                    }
                )
            )
-        
-        5. Search with filters - Find person records with last name "Smith":
+       
+       5. Search with filters - Find person records with last name "Smith":
            search_master_data(
                request=SearchMasterDataRequest(
                    search_type="record",
@@ -159,8 +159,8 @@ def search_master_data(
                    ]
                )
            )
-        
-        6. Search with data quality filter - Find potential duplicates:
+       
+       6. Search with data quality filter - Find potential duplicates:
            search_master_data(
                request=SearchMasterDataRequest(
                    search_type="record",
@@ -174,8 +174,8 @@ def search_master_data(
                    ]
                )
            )
-        
-        7. Advanced nested query - ((Name "Smith" OR "Jones") AND City "Boston") OR (Name "Brown" AND City "New York"):
+       
+       7. Advanced nested query - ((Name "Smith" OR "Jones") AND City "Boston") OR (Name "Brown" AND City "New York"):
            search_master_data(
                request=SearchMasterDataRequest(
                    search_type="record",
@@ -206,7 +206,20 @@ def search_master_data(
                    }
                )
            )
-    """
+       
+       8. Browse all entities - Get sample data (use sparingly with small limit):
+          search_master_data(
+              request=SearchMasterDataRequest(
+                  search_type="entity",
+                  query={
+                      "expressions": [
+                          {"property": "*", "condition": "contains", "value": "*"}
+                      ]
+                  },
+                  limit=10
+              )
+          )
+   """
     service = get_search_service()
     
     result = service.search_master_data(
@@ -217,7 +230,9 @@ def search_master_data(
         limit=request.limit,
         offset=request.offset,
         include_total_count=request.include_total_count,
-        crn=request.crn
+        crn=request.crn,
+        include_attributes=request.include_attributes,
+        exclude_attributes=request.exclude_attributes
     )
     
     if "error" in result:

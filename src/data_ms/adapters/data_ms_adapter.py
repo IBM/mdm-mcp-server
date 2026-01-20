@@ -109,7 +109,9 @@ class DataMSAdapter(BaseMDMAdapter):
         crn: str,
         limit: int = 10,
         offset: int = 0,
-        include_total_count: bool = True
+        include_total_count: bool = True,
+        include_attributes: Optional[List[str]] = None,
+        exclude_attributes: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Search for master data (records, entities, relationships, hierarchy nodes) in the Data Microservice.
@@ -120,6 +122,8 @@ class DataMSAdapter(BaseMDMAdapter):
             limit: Maximum number of results to return
             offset: Number of results to skip for pagination
             include_total_count: Whether to include total count in response
+            include_attributes: Optional list of attributes to include in results
+            exclude_attributes: Optional list of attributes to exclude from results
             
         Returns:
             Search results dictionary
@@ -128,16 +132,37 @@ class DataMSAdapter(BaseMDMAdapter):
             requests.exceptions.RequestException: If request fails
         """
         endpoint = "search"
-        params = {
+        
+        # Map search_type to return_type for the API
+        search_type = search_criteria.get('search_type', 'record')
+        return_type_map = {
+            "record": "results",
+            "entity": "results_as_entities",
+            "hierarchy_node": "results_as_hierarchy_nodes",
+            "relationship": "results"
+        }
+        return_type = return_type_map.get(search_type, "results")
+        
+        params: Dict[str, Any] = {
             "crn": crn,
             "limit": str(limit),
             "offset": str(offset),
-            "include_total_count": str(include_total_count).lower()
+            "include_total_count": str(include_total_count).lower(),
+            "return_type": return_type
         }
         
+        # Add include/exclude attributes if provided
+        # Note: requests library handles lists by creating multiple params with same name
+        # e.g., ?include=attr1&include=attr2
+        if include_attributes:
+            params["include"] = include_attributes
+        
+        if exclude_attributes:
+            params["exclude"] = exclude_attributes
+        
         self.logger.info(
-            f"Searching records for CRN: {crn}, "
-            f"type: {search_criteria.get('search_type', 'unknown')}"
+            f"Searching {search_type} for CRN: {crn}, "
+            f"return_type: {return_type}"
         )
         return self.execute_post(endpoint, search_criteria, params)
     
