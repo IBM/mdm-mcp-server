@@ -33,15 +33,25 @@ def search_master_data(
     """
     Searches for ANY type of Master Data in IBM MDM - use search_type parameter to specify: "record", "entity", "relationship", or "hierarchy_node".
     
-    Supports complex nested AND/OR queries for searching records, entities, relationships, or hierarchy nodes. Also supports full-text search across all fields using property="*"
+    **Understanding search_type**:
+    - "entity" = Golden records (best version after matching/merging) - use for most queries about people, organizations, etc.
+    - "record" = Source records (individual records before matching) - use only when explicitly asked for source data
+    - "relationship" = Relationships between entities
+    - "hierarchy_node" = Hierarchy structures
     
-    **IMPORTANT PREREQUISITE**: You MUST ALWAYS call get_data_model() with format="enhanced_compact"
-    BEFORE using this tool. The data model provides essential information about:
+    Supports complex nested AND/OR queries for searching records, entities, relationships, or hierarchy nodes.
+    
+    **IMPORTANT PREREQUISITE**: You MUST call get_data_model() with format="enhanced_compact"
+    BEFORE using this tool (at least once per session). The data model provides essential information about:
     - Available entity types and record types to search
-    - Searchable attributes and their property paths
+    - Searchable attributes and their COMPLETE property paths (e.g., "legal_name.last_name")
     - Attribute data types and constraints
     
-    Without the data model, you cannot construct valid search queries.
+    **CRITICAL VALIDATION RULES**:
+    - Property paths MUST be complete nested paths from data model (e.g., "legal_name.last_name", NOT "legal_name")
+    - Validation will REJECT incomplete property paths
+    - Use property="*" ONLY as fallback after specific field search fails
+    - Invalid property paths will return validation errors
     
     This tool allows you to construct sophisticated search queries with nested conditions
     using AND/OR logic to find records, entities, relationships, or hierarchy nodes.
@@ -57,8 +67,12 @@ def search_master_data(
                 }
                 
                 Each Expression can be:
-                - Simple expression: {"property": "path.to.field", "condition": "equal", "value": "search_value"}
-                - Full-text expression: {"property": "*", "condition": "contains", "value": "search_value"} - searches ALL fields
+                - Simple expression: {"property": "complete.nested.path", "condition": "equal", "value": "search_value"}
+                  * MUST use complete paths like "legal_name.last_name", NOT "legal_name"
+                  * Validation will reject incomplete paths
+                - Full-text expression: {"property": "*", "condition": "contains", "value": "search_value"}
+                  * Use ONLY as fallback after specific field search fails
+                  * Searches ALL fields (slower but comprehensive)
                 - Nested expression: {"operation": "or", "expressions": [<list of expressions>]}
                 
                 Available conditions:
@@ -68,8 +82,11 @@ def search_master_data(
                 - "fuzzy": Fuzzy text matching
                 - "has_value", "has_no_value": Check for presence/absence of value
                 
-                Property paths use dot notation (e.g., "legal_name.last_name", "address.city", "contact.email")
-                **SPECIAL**: Use "*" as property to search across ALL fields (full-text search)
+                Property paths MUST be complete nested paths from data model:
+                - CORRECT: "legal_name.last_name", "address.city", "contact.email"
+                - WRONG: "legal_name", "address", "contact" (incomplete - will be rejected)
+                - Use "*" ONLY as fallback after specific search fails
+                - NEVER use "*" as first attempt
             - filters: Optional list of filters to narrow down results. Each filter has:
                 {
                     "type": "record" | "entity" | "source" | "relationship" | "data_quality" | "hierarchy_type" | "hierarchy_number" | "group",
@@ -99,10 +116,10 @@ def search_master_data(
                )
            )
        
-       2. Full-text search - Find "Smith" anywhere in entity data (use as fallback if specific search returns 0 results):
+       2. FALLBACK ONLY - Full-text search when specific field search fails (DO NOT use as first attempt):
           search_master_data(
               request=SearchMasterDataRequest(
-                  search_type="entity",
+                  search_type="record",
                   query={
                       "expressions": [
                           {"property": "*", "condition": "contains", "value": "Smith"}
@@ -114,7 +131,7 @@ def search_master_data(
        3. Multiple conditions with AND - Last name "Smith" AND city "Boston":
            search_master_data(
                request=SearchMasterDataRequest(
-                   search_type="record",
+                   search_type="entity",
                    query={
                        "expressions": [
                            {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
@@ -128,14 +145,14 @@ def search_master_data(
        4. Complex nested query - (Last name "Smith" OR "Jones") AND (City "Boston"):
            search_master_data(
                request=SearchMasterDataRequest(
-                   search_type="record",
+                   search_type="entity",
                    query={
                        "expressions": [
                            {
                                "operation": "or",
                                "expressions": [
                                    {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
-                                   {"property": "legal_name.last_name", "condition": "equal", "value": "Jones"}
+                                   {"property": "legal_name.last_name", "condition": "contains", "value": "J"}
                                ]
                            },
                            {"property": "address.city", "condition": "equal", "value": "Boston"}

@@ -72,25 +72,30 @@ def match360_mdm_assistant() -> str:
    - The data model reveals valid search fields, entity types, and record types
 
 2. **STEP 2: Execute Search**
-   - Use `search_master_data` with fields from Step 1
-   - Choose search_type: "entity" (golden records) or "record" (source records)
-   - Start with specific field search for precision
+   - Use `search_master_data` with COMPLETE property paths from the data model
+   - **CRITICAL**: Use full nested paths like "legal_name.last_name", NOT just "legal_name"
+   - **CRITICAL**: NEVER use property="*" as your first attempt - only as fallback
+   - Choose search_type based on user intent:
+     * "entity" (golden records) - DEFAULT for most queries about entities/people/organizations
+     * "record" (source records) - ONLY when user explicitly asks for source records
+   - Validation will reject invalid property paths - use exact paths from data model
    
-3. **STEP 3: Fallback Strategy (if needed)**
-   - If specific field search returns 0 results, try full-text search
+3. **STEP 3: Fallback Strategy (ONLY if Step 2 fails)**
+   - If specific field search returns 0 results OR validation error, try full-text search
    - Full-text syntax: {"property": "*", "condition": "contains", "value": "searchterm"}
-   - This searches across ALL fields automatically
+   - This searches across ALL fields but is slower
 
-**Search Strategy Decision Tree:**
-- Know exact field name? → Use specific field search (fastest)
-- Don't know field OR got 0 results? → Use full-text search (property="*")
-- Want to explore data? → Use browse all (property="*", value="*", limit=10)
+**Property Path Rules (CRITICAL):**
+- ✅ CORRECT: "legal_name.last_name", "address.city", "contact.email"
+- ❌ WRONG: "legal_name", "address", "contact" (incomplete paths)
+- ✅ Use "*" ONLY as fallback after specific search fails
+- ❌ NEVER use "*" as first attempt
 
 **Example Workflows:**
 
 First search in session:
 User: "Find people named Smith"
-1. Call get_data_model() → Learn that "legal_name.last_name" exists
+1. Call get_data_model() → Learn that "legal_name.last_name" exists (NOT just "legal_name")
 2. Call search_master_data(search_type="entity", property="legal_name.last_name", value="Smith")
 3. If 0 results → Try search_master_data(search_type="entity", property="*", value="Smith")
 
@@ -100,12 +105,19 @@ User: "Now find people in Boston"
 2. Call search_master_data(search_type="entity", property="address.city", value="Boston")
 3. If 0 results → Try full-text search
 
+Entity counting/dashboard:
+User: "Count entities by type"
+1. Call get_data_model() → Learn entity types
+2. For each type: search_master_data(search_type="entity", filters=[{"type":"entity","values":["person"]}], limit=1, include_total_count=true)
+3. Use total_count from response for statistics
+
 **Common Mistakes to Avoid:**
 - ❌ Calling search_master_data without ever fetching the data model in the session
 - ❌ Fetching data model repeatedly when you already have it
-- ❌ Using field names not in the data model
-- ❌ Giving up after 0 results (try full-text search)
-- ❌ Using search_type="entity" when user wants source records (use "record" instead)
+- ❌ Using incomplete property paths (e.g., "legal_name" instead of "legal_name.last_name")
+- ❌ Using property="*" as first attempt (only use as fallback)
+- ❌ Using search_type="record" when user asks about entities (default to "entity")
+- ❌ Giving up after 0 results or validation error (try full-text search with property="*")
 
 **Current Task:**
 Await user query and begin Step 1 immediately.
