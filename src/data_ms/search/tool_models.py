@@ -55,6 +55,16 @@ class SearchMasterDataRequest(BaseModel):
         description="Cloud Resource Name identifying the tenant"
     )
     
+    include_attributes: Optional[List[str]] = Field(
+        None,
+        description="Optional list of attribute paths to include in results (e.g., ['legal_name.given_name', 'address.city'])"
+    )
+    
+    exclude_attributes: Optional[List[str]] = Field(
+        None,
+        description="Optional list of attribute paths to exclude from results (e.g., ['legal_name.given_name', 'address.city'])"
+    )
+    
     @field_validator('query')
     @classmethod
     def validate_query_structure(cls, v):

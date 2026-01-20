@@ -217,7 +217,9 @@ def search_master_data(
         limit=request.limit,
         offset=request.offset,
         include_total_count=request.include_total_count,
-        crn=request.crn
+        crn=request.crn,
+        include_attributes=request.include_attributes,
+        exclude_attributes=request.exclude_attributes
     )
     
     if "error" in result:
