@@ -104,6 +104,29 @@ class TestPropertyPathValidation:
         assert error is not None
         assert "does not exist" in error
 
+    def test_wildcard_property_allowed(self, sample_data_model):
+        """Test that wildcard '*' property is allowed for full-text search."""
+        validator = DataModelValidator(sample_data_model)
+        
+        # Wildcard should be valid
+        is_valid, error = validator.validate_property_path("*")
+        
+        assert is_valid
+        assert error is None
+
+    def test_incomplete_path_rejected_when_nested_exists(self, sample_data_model):
+        """Test that incomplete paths like 'legal_name' are rejected when nested paths exist."""
+        validator = DataModelValidator(sample_data_model)
+        
+        # 'legal_name' alone should be rejected if 'legal_name.last_name' exists
+        is_valid, error = validator.validate_property_path("legal_name")
+        
+        # This should fail because legal_name has nested fields
+        assert not is_valid
+        assert error is not None
+        assert "incomplete path" in error.lower()
+        assert "legal_name.last_name" in error or "legal_name.first_name" in error
+
 
 class TestSimpleQueryValidation:
     """Test validation of simple queries."""

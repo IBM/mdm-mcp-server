@@ -119,6 +119,21 @@ class DataModelValidator:
         Returns:
             Tuple of (is_valid, error_message)
         """
+        # Special case: "*" is allowed for full-text search
+        if property_path == "*":
+            return True, None
+        
+        # FIRST: Check if this is an incomplete path (e.g., "legal_name" when "legal_name.last_name" exists)
+        # This must be checked BEFORE checking if property exists, because the parent attribute
+        # might exist in valid_properties but we want to reject it if nested paths exist
+        nested_paths = [p for p in self.valid_properties.keys() if p.startswith(f"{property_path}.")]
+        if nested_paths:
+            return False, (
+                f"Invalid property path '{property_path}'. This appears to be an incomplete path. "
+                f"You must use the complete nested path. "
+                f"Did you mean one of: {', '.join(nested_paths[:3])}?"
+            )
+        
         # Check if property exists
         if property_path not in self.valid_properties:
             # Try to provide helpful suggestions
