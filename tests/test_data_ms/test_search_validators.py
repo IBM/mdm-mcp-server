@@ -34,10 +34,16 @@ class TestPropertyPathValidation:
     """Test property path validation."""
 
     def test_valid_top_level_property(self, sample_data_model):
-        """Test validation of valid top-level property."""
+        """Test validation of valid top-level property that has no nested fields."""
         validator = DataModelValidator(sample_data_model)
         
-        is_valid, error = validator.validate_property_path("legal_name")
+        # 'age' and 'email' are simple types with no nested fields
+        is_valid, error = validator.validate_property_path("age")
+        
+        assert is_valid
+        assert error is None
+        
+        is_valid, error = validator.validate_property_path("email")
         
         assert is_valid
         assert error is None
@@ -62,15 +68,15 @@ class TestPropertyPathValidation:
         assert "does not exist" in error
 
     def test_non_searchable_top_level_property(self, sample_data_model):
-        """Test validation of non-searchable top-level property."""
+        """Test validation of non-searchable top-level property with nested fields."""
         validator = DataModelValidator(sample_data_model)
         
-        # 'address' is not indexed
+        # 'address' is not indexed AND has nested fields - should suggest nested paths
         is_valid, error = validator.validate_property_path("address")
         
         assert not is_valid
         assert error is not None
-        assert "not searchable" in error
+        assert "incomplete path" in error.lower()
 
     def test_non_searchable_nested_property(self, sample_data_model):
         """Test validation of non-searchable nested property."""
@@ -165,12 +171,12 @@ class TestSimpleQueryValidation:
         assert "invalid_field" in invalid_props
 
     def test_validate_query_with_non_searchable_property(self, sample_data_model):
-        """Test validation of query with non-searchable property."""
+        """Test validation of query with non-searchable nested property."""
         validator = DataModelValidator(sample_data_model)
         
         query = {
             "expressions": [
-                {"property": "address", "condition": "equal", "value": "test"}
+                {"property": "legal_name.middle_name", "condition": "equal", "value": "test"}
             ]
         }
         
@@ -179,6 +185,8 @@ class TestSimpleQueryValidation:
         assert not is_valid
         assert len(errors) > 0
         assert "not searchable" in errors[0]
+        # The property name should be in the error message
+        assert "legal_name.middle_name" in errors[0]
 
 
 class TestNestedQueryValidation:
