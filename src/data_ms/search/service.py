@@ -315,7 +315,8 @@ class SearchService(BaseService):
             )
             
             # Build and validate search criteria (includes data model validation)
-            search_criteria = self.build_search_criteria(session_id, search_type, query, filters)
+            # search_criteria = self.build_search_criteria(session_id, search_type, query, filters)
+            search_criteria = self.parse_search_criteria(search_type, query, filters)
             
             # Execute search request and return raw response
             return self.execute_search_request(
