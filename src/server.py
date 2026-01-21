@@ -3,6 +3,8 @@
 # Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 # See the LICENSE file in the project root for license information.
 
+# This file has been modified with the assistance of IBM Bob (AI Code Assistant)
+
 """
 MCP Server for IBM MDM
 This server exposes tools to interact with IBM MDM services via REST API calls.
@@ -123,7 +125,7 @@ User: "Count entities by type"
 Await user query and begin Step 1 immediately.
 """
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="MCP Server arguments to control the mode and port")
     parser.add_argument("--mode", "-m", help="Mode of operation of the server", choices=["http", "stdio"], default="http")
     parser.add_argument(
@@ -143,3 +145,6 @@ if __name__ == "__main__":
         port = int(os.getenv("PORT", str(port_arg)))
         logger.info(f"Starting MCP server on port {port}")
         mcp.run(transport="streamable-http")
+
+if __name__ == "__main__":
+    main()
