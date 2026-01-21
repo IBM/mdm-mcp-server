@@ -1,0 +1,123 @@
+# Copyright [2026] [IBM]
+# Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+# See the LICENSE file in the project root for license information.
+
+# This file has been modified with the assistance of IBM Bob (AI Code Assistant)
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ibm_mdm_mcp_server"
+version = "1.0.7"
+description = "A Model Context Protocol (MCP) server for IBM Master Data Management (MDM) services"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Najeeb Arif", email = "najeeb.arif@ibm.com"},
+    {name = "Muhammed Abdul Majeed Ameen", email = "muhammed.abdul.majeed.ameen@ibm.com"}
+]
+maintainers = [
+    {name = "Najeeb Arif", email = "najeeb.arif@ibm.com"},
+    {name = "Muhammed Abdul Majeed Ameen", email = "muhammed.abdul.majeed.ameen@ibm.com"}
+]
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "ibm",
+    "mdm",
+    "master-data-management",
+    "match360",
+    "ai",
+    "claude",
+    "fastmcp"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Framework :: FastAPI",
+]
+
+dependencies = [
+    "fastmcp>=2.14.0",
+    "fastapi>=0.121.0",
+    "uvicorn>=0.38.0",
+    "pydantic>=2.12.0",
+    "pydantic-settings>=2.12.0",
+    "python-dotenv>=1.2.0",
+    "requests>=2.32.0",
+    "httpx>=0.28.0",
+    "PyJWT>=2.10.0",
+    "urllib3>=2.6.3",
+    "Authlib>=1.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "pytest-mock>=3.14.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/IBM/mdm-mcp-server"
+Documentation = "https://github.com/IBM/mdm-mcp-server/blob/main/README.md"
+Repository = "https://github.com/IBM/mdm-mcp-server"
+Issues = "https://github.com/IBM/mdm-mcp-server/issues"
+Changelog = "https://github.com/IBM/mdm-mcp-server/blob/main/CHANGELOG.md"
+
+[project.scripts]
+ibm_mdm_mcp_server = "server:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["server", "config"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests*", "client*", "scripts*"]
+
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --strict-markers"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
