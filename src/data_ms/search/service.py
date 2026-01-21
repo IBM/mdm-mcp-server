@@ -306,7 +306,7 @@ class SearchService(BaseService):
         try:
             # Validate session and CRN, check preconditions (including data model fetch)
             session_id, validated_crn, tenant_id = self.validate_session_and_crn(
-                ctx, crn, check_preconditions=True
+                ctx, crn, check_preconditions=False
             )
             
             self.logger.info(

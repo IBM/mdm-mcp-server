@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ibm_mdm_mcp_server"
-version = "1.0.7"
+version = "1.0.8"
 description = "A Model Context Protocol (MCP) server for IBM Master Data Management (MDM) services"
 readme = "README.md"
 requires-python = ">=3.10"
