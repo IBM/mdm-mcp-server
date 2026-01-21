@@ -86,7 +86,7 @@ cd mdm-mcp-server
 **Run the setup wizard:**
 
 ```bash
-python setup.py
+python setup_wizard.py
 ```
 
 The setup wizard will guide you through:
@@ -100,17 +100,17 @@ The setup wizard will guide you through:
 
 **Interactive setup (recommended):**
 ```bash
-python setup.py
+python setup_wizard.py
 ```
 
 **Claude Desktop integration only:**
 ```bash
-python setup.py --claude
+python setup_wizard.py --claude
 ```
 
 **HTTP mode only (for MCP Inspector):**
 ```bash
-python setup.py --http
+python setup_wizard.py --http
 ```
 
 After setup completes:
