@@ -192,7 +192,7 @@ MCP_TOOLS_MODE=minimal
 **For IBM MDM on Software Hub:**
 ```env
 M360_TARGET_PLATFORM=cpd
-API_CPD_BASE_URL=<your_cpd_base_url+instance_id+mdm+v1> #Example https://cpd-xxxx.ibm.com/1767689393191029/mdm/v1/
+API_CPD_BASE_URL=<your_cpd_base_url+instance_id+mdm+v1> #Example https://cpd-xxxx.ibm.com/0000000000000000/mdm/v1/
 API_CPD_AUTH_URL=<your_cpd_auth_url>
 API_USERNAME=<your_username>
 API_PASSWORD=<your_password>
