@@ -50,17 +50,17 @@ python --version
 
 ## Quick Start
 
-The easiest way to get started is to use the automated setup script:
+The easiest way to get started is to use the automated setup wizard:
 
 ```bash
-python setup.py
+python setup_wizard.py
 ```
 
 This will launch an interactive wizard that guides you through the entire setup process.
 
-## Setup Script Features
+## Setup Wizard Features
 
-The `setup.py` script automates:
+The `setup_wizard.py` script automates:
 
 1. **Virtual Environment Creation** - Creates and configures a Python virtual environment
 2. **Dependency Installation** - Installs all required packages automatically
@@ -73,7 +73,7 @@ The `setup.py` script automates:
 ### Interactive Setup (Recommended)
 
 ```bash
-python setup.py
+python setup_wizard.py
 ```
 
 This mode will:
@@ -85,7 +85,7 @@ This mode will:
 ### Claude Desktop Integration Only
 
 ```bash
-python setup.py --claude
+python setup_wizard.py --claude
 ```
 
 Use this when you want to:
@@ -100,7 +100,7 @@ After setup:
 ### HTTP Mode Only
 
 ```bash
-python setup.py --http
+python setup_wizard.py --http
 ```
 
 Use this when you want to:
@@ -229,9 +229,10 @@ After successful setup:
 
 If you encounter issues:
 
-1. Check the [Troubleshooting](#troubleshooting) section above
-2. Review the main [README.md](README.md) troubleshooting section
-3. Open an issue on [GitHub](https://github.com/IBM/mdm-mcp-server/issues)
+1. Check the [Troubleshooting Guide](TROUBLESHOOTING.md) for comprehensive solutions
+2. Review the [Claude Desktop Setup Guide](CLAUDE_DESKTOP_SETUP.md) for integration help
+3. See the [Manual Installation Guide](MANUAL_INSTALLATION.md) for alternative setup methods
+4. Open an issue on [GitHub](https://github.com/IBM/mdm-mcp-server/issues)
 
 ## Advanced Usage
 
