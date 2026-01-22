@@ -186,33 +186,20 @@ make publish        # Publish to PyPI
 
 ## Troubleshooting
 
-### Common Issues
+Having issues with PyPI publishing? Common issues include:
 
-1. **Version Already Exists**
-   - Error: `File already exists`
-   - Solution: Increment the version number in `pyproject.toml`
+**Quick Fixes:**
+- **Version Already Exists:** Increment version number in `pyproject.toml`
+- **Authentication Failed:** Verify API token is correct and has proper permissions
+- **Invalid Package Structure:** Ensure `pyproject.toml` is properly configured
+- **Missing Dependencies:** Install required tools: `pip install --upgrade build twine`
 
-2. **Authentication Failed**
-   - Error: `403 Forbidden`
-   - Solution: Verify your API token is correct and has proper permissions
-
-3. **Invalid Package Structure**
-   - Error: `Invalid distribution file`
-   - Solution: Ensure `pyproject.toml` is properly configured and all required files are included
-
-4. **Missing Dependencies**
-   - Error: `No module named 'build'` or `No module named 'twine'`
-   - Solution: Install required tools: `pip install --upgrade build twine`
-
-### Validation Before Publishing
-
-Check package metadata:
-
+**Validation Before Publishing:**
 ```bash
 python -m twine check dist/*
 ```
 
-This validates that your package description will render correctly on PyPI.
+📖 For comprehensive troubleshooting including installation, configuration, and runtime issues, see the [Troubleshooting Guide](TROUBLESHOOTING.md).
 
 ## Best Practices
 

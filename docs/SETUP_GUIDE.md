@@ -160,39 +160,26 @@ After running the setup script, you'll have:
 
 ## Troubleshooting
 
-### Python Version Error
+Having issues with setup? See our comprehensive troubleshooting guide:
 
-**Error**: "Python 3.10+ required"
+📖 **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Complete solutions for:
 
-**Solution**: Install Python 3.10 or higher from [python.org](https://www.python.org/downloads/)
+**Installation Issues:**
+- [Python Version Problems](TROUBLESHOOTING.md#python-version-problems)
+- [Package Installation Failures](TROUBLESHOOTING.md#package-installation-failures)
+- [Virtual Environment Issues](TROUBLESHOOTING.md#virtual-environment-issues)
+- [Dependency Conflicts](TROUBLESHOOTING.md#dependency-conflicts)
 
-**Note**: This project requires Python 3.10+ due to fastmcp>=2.14.0 dependency requirements.
+**Configuration Issues:**
+- [Environment Variables Not Loading](TROUBLESHOOTING.md#environment-variables-not-loading)
+- [Invalid Credentials](TROUBLESHOOTING.md#invalid-credentials)
+- [Platform Configuration Errors](TROUBLESHOOTING.md#platform-configuration-errors)
 
-### Virtual Environment Creation Failed
+**Claude Desktop Integration:**
+- [Tools Don't Appear](TROUBLESHOOTING.md#tools-dont-appear-in-claude-desktop)
+- [Configuration File Issues](TROUBLESHOOTING.md#configuration-file-issues)
 
-**Error**: "Failed to create virtual environment"
-
-**Solution**: 
-```bash
-# Ensure venv module is available
-python -m pip install --upgrade pip
-python -m ensurepip
-```
-
-### Claude Desktop Config Not Found
-
-**Error**: "Claude Desktop config directory not found"
-
-**Solution**: Install Claude Desktop first from [claude.ai/download](https://claude.ai/download)
-
-### Permission Denied
-
-**Error**: Permission errors when creating files
-
-**Solution**:
-- Ensure you have write permissions in the project directory
-- On macOS/Linux, avoid using `sudo` with the setup script
-- On Windows, run the command prompt as Administrator if needed
+For detailed step-by-step solutions, see the [full troubleshooting documentation](TROUBLESHOOTING.md).
 
 ## Manual Configuration
 
