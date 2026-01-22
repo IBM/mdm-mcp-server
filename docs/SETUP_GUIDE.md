@@ -50,17 +50,17 @@ python --version
 
 ## Quick Start
 
-The easiest way to get started is to use the automated setup script:
+The easiest way to get started is to use the automated setup wizard:
 
 ```bash
-python setup.py
+python setup_wizard.py
 ```
 
 This will launch an interactive wizard that guides you through the entire setup process.
 
-## Setup Script Features
+## Setup Wizard Features
 
-The `setup.py` script automates:
+The `setup_wizard.py` script automates:
 
 1. **Virtual Environment Creation** - Creates and configures a Python virtual environment
 2. **Dependency Installation** - Installs all required packages automatically
@@ -73,7 +73,7 @@ The `setup.py` script automates:
 ### Interactive Setup (Recommended)
 
 ```bash
-python setup.py
+python setup_wizard.py
 ```
 
 This mode will:
@@ -85,7 +85,7 @@ This mode will:
 ### Claude Desktop Integration Only
 
 ```bash
-python setup.py --claude
+python setup_wizard.py --claude
 ```
 
 Use this when you want to:
@@ -100,7 +100,7 @@ After setup:
 ### HTTP Mode Only
 
 ```bash
-python setup.py --http
+python setup_wizard.py --http
 ```
 
 Use this when you want to:
@@ -160,39 +160,26 @@ After running the setup script, you'll have:
 
 ## Troubleshooting
 
-### Python Version Error
+Having issues with setup? See our comprehensive troubleshooting guide:
 
-**Error**: "Python 3.10+ required"
+📖 **[Troubleshooting Guide](TROUBLESHOOTING.md)** - Complete solutions for:
 
-**Solution**: Install Python 3.10 or higher from [python.org](https://www.python.org/downloads/)
+**Installation Issues:**
+- [Python Version Problems](TROUBLESHOOTING.md#python-version-problems)
+- [Package Installation Failures](TROUBLESHOOTING.md#package-installation-failures)
+- [Virtual Environment Issues](TROUBLESHOOTING.md#virtual-environment-issues)
+- [Dependency Conflicts](TROUBLESHOOTING.md#dependency-conflicts)
 
-**Note**: This project requires Python 3.10+ due to fastmcp>=2.14.0 dependency requirements.
+**Configuration Issues:**
+- [Environment Variables Not Loading](TROUBLESHOOTING.md#environment-variables-not-loading)
+- [Invalid Credentials](TROUBLESHOOTING.md#invalid-credentials)
+- [Platform Configuration Errors](TROUBLESHOOTING.md#platform-configuration-errors)
 
-### Virtual Environment Creation Failed
+**Claude Desktop Integration:**
+- [Tools Don't Appear](TROUBLESHOOTING.md#tools-dont-appear-in-claude-desktop)
+- [Configuration File Issues](TROUBLESHOOTING.md#configuration-file-issues)
 
-**Error**: "Failed to create virtual environment"
-
-**Solution**: 
-```bash
-# Ensure venv module is available
-python -m pip install --upgrade pip
-python -m ensurepip
-```
-
-### Claude Desktop Config Not Found
-
-**Error**: "Claude Desktop config directory not found"
-
-**Solution**: Install Claude Desktop first from [claude.ai/download](https://claude.ai/download)
-
-### Permission Denied
-
-**Error**: Permission errors when creating files
-
-**Solution**:
-- Ensure you have write permissions in the project directory
-- On macOS/Linux, avoid using `sudo` with the setup script
-- On Windows, run the command prompt as Administrator if needed
+For detailed step-by-step solutions, see the [full troubleshooting documentation](TROUBLESHOOTING.md).
 
 ## Manual Configuration
 
@@ -242,9 +229,10 @@ After successful setup:
 
 If you encounter issues:
 
-1. Check the [Troubleshooting](#troubleshooting) section above
-2. Review the main [README.md](README.md) troubleshooting section
-3. Open an issue on [GitHub](https://github.com/IBM/mdm-mcp-server/issues)
+1. Check the [Troubleshooting Guide](TROUBLESHOOTING.md) for comprehensive solutions
+2. Review the [Claude Desktop Setup Guide](CLAUDE_DESKTOP_SETUP.md) for integration help
+3. See the [Manual Installation Guide](MANUAL_INSTALLATION.md) for alternative setup methods
+4. Open an issue on [GitHub](https://github.com/IBM/mdm-mcp-server/issues)
 
 ## Advanced Usage
 
