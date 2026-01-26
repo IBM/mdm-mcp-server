@@ -25,6 +25,7 @@ from config import Config
 from data_ms.search.tools import search_master_data
 from data_ms.records.tools import get_record_by_id, get_records_entities_by_record_id
 from data_ms.entities.tools import get_entity
+from data_ms.data_exports.tools import create_data_export, download_data_export
 from model_ms.model.tools import get_data_model
 
 # Load environment variables
@@ -55,6 +56,11 @@ if TOOLS_MODE == "full":
     mcp.add_tool(Tool.from_function(get_record_by_id, name="get_record"))
     mcp.add_tool(Tool.from_function(get_entity, name="get_entity"))
     mcp.add_tool(Tool.from_function(get_records_entities_by_record_id, name="get_records_entities_by_record_id"))
+    
+    # Register data export tools
+    logger.info("Registering data export tools: create_data_export, download_data_export")
+    mcp.add_tool(Tool.from_function(create_data_export, name="create_data_export"))
+    mcp.add_tool(Tool.from_function(download_data_export, name="download_data_export"))
 
 @mcp.prompt()
 def match360_mdm_assistant() -> str:
@@ -93,6 +99,17 @@ def match360_mdm_assistant() -> str:
 - ✅ Use "*" ONLY as fallback after specific search fails
 - ❌ NEVER use "*" as first attempt
 
+**Data Export Workflow:**
+When users want to export master data:
+1. Use `create_data_export` to start an export job with:
+   - export_name: A descriptive name for the export
+   - export_type: "entity" for golden records, "record" for source records
+   - record_type: The type of data to export (e.g., "person", "organization")
+   - file_format: "csv", "tsv", or "psv"
+   - compression_type: "none", "zip", "tar", or "tgz"
+   - search_criteria: Optional filters to export specific data
+2. Use `download_data_export` to get the download URL when the export is complete
+
 **Example Workflows:**
 
 First search in session:
@@ -112,6 +129,11 @@ User: "Count entities by type"
 1. Call get_data_model() → Learn entity types
 2. For each type: search_master_data(search_type="entity", filters=[{"type":"entity","values":["person"]}], limit=1, include_total_count=true)
 3. Use total_count from response for statistics
+
+Data export:
+User: "Export all person entities to CSV"
+1. Call create_data_export(export_name="person_export", export_type="entity", record_type="person", file_format="csv")
+2. When export is complete, call download_data_export(export_id=<id>) to get download URL
 
 **Common Mistakes to Avoid:**
 - ❌ Calling search_master_data without ever fetching the data model in the session
