@@ -27,6 +27,7 @@ import json
 import platform
 import subprocess
 import shutil
+import getpass
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
@@ -210,13 +211,22 @@ def install_dependencies() -> bool:
         return False
 
 
-def get_user_input(prompt: str, default: str = "") -> str:
-    """Get user input with optional default value"""
-    if default:
-        user_input = input(f"{prompt} [{default}]: ").strip()
-        return user_input if user_input else default
+def get_user_input(prompt: str, default: str = "", secure: bool = False) -> str:
+    """Get user input with optional default value and secure input for sensitive data"""
+    if secure:
+        # Use getpass for sensitive inputs (API keys, passwords)
+        if default:
+            user_input = getpass.getpass(f"{prompt} [{default}]: ").strip()
+            return user_input if user_input else default
+        else:
+            return getpass.getpass(f"{prompt}: ").strip()
     else:
-        return input(f"{prompt}: ").strip()
+        # Regular input for non-sensitive data
+        if default:
+            user_input = input(f"{prompt} [{default}]: ").strip()
+            return user_input if user_input else default
+        else:
+            return input(f"{prompt}: ").strip()
 
 
 def configure_environment() -> Dict[str, str]:
@@ -242,7 +252,7 @@ def configure_environment() -> Dict[str, str]:
             "Enter Auth URL",
             "https://iam.cloud.ibm.com/identity/token"
         )
-        env_vars["API_CLOUD_API_KEY"] = get_user_input("Enter API Key")
+        env_vars["API_CLOUD_API_KEY"] = get_user_input("Enter API Key", secure=True)
         env_vars["API_CLOUD_CRN"] = get_user_input("Enter Instance CRN")
     else:
         print_info("\nConfiguring for IBM MDM on Software Hub...")
@@ -250,7 +260,7 @@ def configure_environment() -> Dict[str, str]:
         env_vars["API_CPD_BASE_URL"] = get_user_input("Enter CPD Base URL")
         env_vars["API_CPD_AUTH_URL"] = get_user_input("Enter CPD Auth URL")
         env_vars["API_USERNAME"] = get_user_input("Enter Username")
-        env_vars["API_PASSWORD"] = get_user_input("Enter Password")
+        env_vars["API_PASSWORD"] = get_user_input("Enter Password", secure=True)
     
     # Tool mode configuration
     print("\nSelect tool mode:")
