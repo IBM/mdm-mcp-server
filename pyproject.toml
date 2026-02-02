@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ibm_mdm_mcp_server"
-version = "1.0.9"
+version = "1.0.10"
 description = "A Model Context Protocol (MCP) server for IBM Master Data Management (MDM) services"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -59,7 +59,7 @@ dependencies = [
     "httpx>=0.28.0",
     "PyJWT>=2.10.0",
     "urllib3>=2.6.3",
-    "Authlib>=1.6.0",
+    "Authlib>=1.6.5",
 ]
 
 [project.optional-dependencies]
