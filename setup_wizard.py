@@ -259,6 +259,8 @@ def configure_environment() -> Dict[str, str]:
         env_vars["M360_TARGET_PLATFORM"] = "cpd"
         env_vars["API_CPD_BASE_URL"] = get_user_input("Enter CPD Base URL")
         env_vars["API_CPD_AUTH_URL"] = get_user_input("Enter CPD Auth URL")
+        env_vars["ZEN_BASE_URL"] = get_user_input("Enter Zen Base URL")
+        env_vars["MDM_INSTANCE_ID"] = get_user_input("Enter MDM Instance ID")
         env_vars["API_USERNAME"] = get_user_input("Enter Username")
         env_vars["API_PASSWORD"] = get_user_input("Enter Password", secure=True)
     

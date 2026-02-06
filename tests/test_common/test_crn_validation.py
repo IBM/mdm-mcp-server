@@ -116,7 +116,7 @@ class TestTenantIDExtraction:
     """Test tenant ID extraction from CRNs."""
 
     @pytest.mark.parametrize("crn,expected_tenant_id", [
-        (":::::::tenant01::", "tenant01"),
+        (":::::::1::", "tenant01"),
         (":::::::production_tenant::", "production_tenant"),
         ("crn:v1:staging:public:mdm-oc:us-south:a/account123:instance456::", "instance456"),
     ])

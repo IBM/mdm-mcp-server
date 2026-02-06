@@ -8,7 +8,7 @@ CRN (Cloud Resource Name) validation utility for IBM MDM MCP server.
 
 CRN Format:
 - Full format: "crn:v1:staging:public:mdm-oc:us-south:a/account123:instance456::"
-- On-Prem format: ":::::::tenant01::"
+- On-Prem format: ":::::::1::"
 
 The tenant ID is the instance field (index 7).
 """
@@ -21,7 +21,7 @@ from config import Config
 logger = logging.getLogger(__name__)
 
 # Default CRN for On-Prem deployments
-DEFAULT_CRN = ":::::::tenant01::"
+DEFAULT_CRN = ":::::::1::"
 
 # Get cloud CRN from config
 CLOUD_CRN = Config.API_CLOUD_CRN
@@ -69,7 +69,7 @@ def validate_crn(crn: str) -> Tuple[bool, Optional[str], Optional[str]]:
     
     return False, None, (
         "CRN format is invalid. Expected formats:\n"
-        "  - On-Prem: ':::::::tenant_id::' (e.g., ':::::::tenant01::')\n"
+        "  - On-Prem: ':::::::tenant_id::' (e.g., ':::::::1::')\n"
         "  - Full: 'crn:version:env:visibility:service:region:account:instance::' "
         "(e.g., 'crn:v1:staging:public:mdm-oc:us-south:a/account123:instance456::')"
     )
@@ -157,7 +157,7 @@ def format_crn_error_response(crn: str, error_msg: str) -> dict:
         message=error_msg,
         default_crn=DEFAULT_CRN,
         valid_formats=[
-            "On-Prem: ':::::::tenant_id::' (e.g., ':::::::tenant01::')",
+            "On-Prem: ':::::::tenant_id::' (e.g., ':::::::1::')",
             "Full: 'crn:version:env:visibility:service:region:account:instance::'"
         ]
     )

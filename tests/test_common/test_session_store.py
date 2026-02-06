@@ -160,7 +160,7 @@ class TestErrorMessageFormat:
             "To fix this error:\n"
             "1. First call get_data_model() in the same session:\n"
             "   get_data_model(\n"
-            "       tenant_id=\":::::::tenant01::\",\n"
+            "       tenant_id=\":::::::1::\",\n"
             "       format=\"enhanced_compact\"\n"
             "   )\n\n"
             "2. Review the data model to understand:\n"

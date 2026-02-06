@@ -152,7 +152,7 @@ class TestGetDataModelSuccess:
         mock_service_class.return_value = mock_service
         expected_model = {"entity_types": [], "attribute_type_definitions": {}}
         mock_service.get_data_model.return_value = expected_model
-        custom_crn = ":::::::tenant01::"
+        custom_crn = ":::::::1::"
         
         import model_ms.model.tools as tools_module
         tools_module._model_service = mock_service
@@ -274,7 +274,7 @@ class TestGetDataModelIntegration:
         mock_session_store_getter.return_value = mock_session_store
         
         # Mock CRN validation to return valid CRN and tenant
-        mock_crn_validator.return_value = (":::::::tenant01::", "tenant01")
+        mock_crn_validator.return_value = (":::::::1::", "tenant01")
         
         mock_context.session_id = "test-session-123"
         

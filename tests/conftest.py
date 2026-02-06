@@ -57,7 +57,7 @@ def mock_context():
 @pytest.fixture
 def sample_crn_onprem():
     """Provide a sample on-premise CRN for testing."""
-    return ":::::::tenant01::"
+    return ":::::::1::"
 
 
 @pytest.fixture

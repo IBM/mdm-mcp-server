@@ -16,6 +16,7 @@ import urllib3
 import base64
 import jwt
 import threading
+import time
 from typing import Optional, Dict, Tuple
 from datetime import datetime, timedelta
 
@@ -132,6 +133,17 @@ class AuthenticationManager:
         
         # Token cache (injected or created)
         self._token_cache = token_cache or TokenCache()
+        # ─── Added for MDM service token ─────────────────────────────────
+        self.zen_base_url = Config.ZEN_BASE_URL.rstrip('/')
+        self.mdm_instance_id = Config.MDM_INSTANCE_ID
+        # Optional safety check
+        if not self.zen_base_url:
+            raise ValueError("ZEN_BASE_URL is not set in config")
+        if not self.mdm_instance_id:
+            raise ValueError("MDM_INSTANCE_ID is not set in config")
+        self._service_token = None
+        self._service_token_expiry = 0.0
+        # ──────────────────────────────────────────────────────────────────
         self.logger = logger
     
     def _decode_jwt_expiry(self, token: str) -> Optional[datetime]:
@@ -248,7 +260,48 @@ class AuthenticationManager:
         except Exception as e:
             self.logger.error(f"Unexpected error fetching CPD token: {e}")
             raise
-    
+
+    def _fetch_mdm_service_token(self, zen_token: str) -> str:
+        """
+        Fetch MDM service-specific token using the Zen platform token
+        """
+        url = f"{self.zen_base_url}/zen-data/v2/serviceInstance/token"
+
+        headers = {
+            "Authorization": f"Bearer {zen_token}",
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+
+        payload = {
+            "serviceInstanceID": self.mdm_instance_id
+        }
+
+        self.logger.info(f"Fetching MDM service token for instance {self.mdm_instance_id}")
+
+        response = requests.post(
+            url,
+            json=payload,
+            headers=headers,
+            verify=self.verify_ssl,
+            timeout=self.timeout
+        )
+
+        response.raise_for_status()
+        data = response.json()
+
+        service_token = data.get("AccessToken")
+        if not service_token:
+            raise ValueError("No 'AccessToken' field in MDM service token response")
+
+        # Expiry handling (fallback to 1 hour)
+        expires_in = data.get("expires_in", 3600)
+        self._service_token_expiry = time.time() + expires_in - 120
+
+        self.logger.info(f"MDM service token received (expires in ~{expires_in}s)")
+
+        return service_token
+
     def _fetch_cloud_token(self) -> Tuple[str, datetime]:
         """
         Fetch a new access token from the Cloud IAM API.
@@ -345,18 +398,20 @@ class AuthenticationManager:
         """
         # Try to get cached token
         token = self._token_cache.get()
-        
+
         if token is not None:
             self.logger.debug("Using cached token")
-            return token
-        
-        # Need to fetch new token
-        self.logger.info("No valid cached token, fetching new one")
-        token, expiry_time = self._fetch_new_token()
-        
-        # Cache the new token
-        self._token_cache.set(token, expiry_time)
-        
+        else:
+            self.logger.info("No valid cached token, fetching new one")
+            token, expiry_time = self._fetch_new_token()
+            self._token_cache.set(token, expiry_time)
+
+        # For CPD: exchange platform token for MDM service token
+        if self.platform == "cpd":
+            service_token = self._fetch_mdm_service_token(token)
+            self._service_token = service_token
+            return service_token
+
         return token
     
     def get_auth_headers(self) -> Dict[str, str]:
@@ -419,3 +474,6 @@ class AuthenticationManager:
         """
         self.logger.info("Invalidating token")
         self._token_cache.invalidate()
+        # Added: also clear service token
+        self._service_token = None
+        self._service_token_expiry = 0.0

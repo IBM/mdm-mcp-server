@@ -33,5 +33,7 @@ class Config:
         API_BASE_URL = API_CLOUD_BASE_URL
     elif M360_TARGET_PLATFORM == "cpd":
         API_BASE_URL = API_CPD_BASE_URL
+        ZEN_BASE_URL = os.getenv("ZEN_BASE_URL")
+        MDM_INSTANCE_ID = os.getenv("MDM_INSTANCE_ID")
     else:
         raise ValueError("Invalid platform specified")
