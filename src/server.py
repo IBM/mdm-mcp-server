@@ -144,7 +144,7 @@ def main():
         port_arg = args.port
         port = int(os.getenv("PORT", str(port_arg)))
         logger.info(f"Starting MCP server on port {port}")
-        mcp.run(transport="streamable-http")
+        mcp.run(transport="streamable-http", port=port)
 
 if __name__ == "__main__":
     main()
