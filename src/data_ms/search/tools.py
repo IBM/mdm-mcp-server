@@ -28,6 +28,7 @@ def get_search_service() -> SearchService:
 
 def search_master_data(
     ctx: Context,
+    crn: Optional[str],
     request: SearchMasterDataRequest
 ) -> SearchResponse:
     """
@@ -58,6 +59,7 @@ def search_master_data(
     
     Args:
         ctx: MCP Context object (automatically injected) - provides session information
+        crn: Cloud Resource Name identifying the tenant (optional, defaults to On-Prem tenant)
         request: SearchRecordsRequest containing:
             - search_type: Type of data to search for. Options: "record", "entity", "relationship", "hierarchy_node"
             - query: The search query object containing expressions and operations. Structure:
@@ -98,7 +100,6 @@ def search_master_data(
             - limit: Maximum number of results to return (max 50, default: 10)
             - offset: Number of results to skip for pagination (default: 0)
             - include_total_count: Whether to include total count in response (default: true)
-            - crn: Cloud Resource Name identifying the tenant (optional, defaults to On-Prem tenant)
     
     Returns:
         Search results containing matched records with pagination info
@@ -247,7 +248,7 @@ def search_master_data(
         limit=request.limit,
         offset=request.offset,
         include_total_count=request.include_total_count,
-        crn=request.crn,
+        crn=crn,
         include_attributes=request.include_attributes,
         exclude_attributes=request.exclude_attributes
     )
