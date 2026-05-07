@@ -21,6 +21,9 @@ from fastmcp.tools.tool import Tool
 # Import configuration
 from config import Config
 
+# Import identity propagation middleware
+from common.auth.token_middleware import UserTokenMiddleware
+
 # Import your tools
 from data_ms.search.tools import search_master_data
 from data_ms.records.tools import get_record_by_id, get_records_entities_by_record_id
@@ -37,8 +40,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Initialize MCP
-mcp = FastMCP("mdm-mcp-server")
+# Initialize MCP with identity-propagation middleware
+mcp = FastMCP("mdm-mcp-server", middleware=[UserTokenMiddleware()])
 
 # Get tools mode from configuration
 TOOLS_MODE = Config.MCP_TOOLS_MODE.lower()
@@ -144,7 +147,7 @@ def main():
         port_arg = args.port
         port = int(os.getenv("PORT", str(port_arg)))
         logger.info(f"Starting MCP server on port {port}")
-        mcp.run(transport="streamable-http",  port=port)
+        mcp.run(transport="streamable-http", port=port)
 
 if __name__ == "__main__":
     main()

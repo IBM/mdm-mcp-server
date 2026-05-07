@@ -21,6 +21,7 @@ from datetime import datetime, timedelta
 
 from config import Config
 from common.auth.token_cache import TokenCache
+from common.auth.user_token_context import get_user_token
 
 # Disable SSL warnings when verify=False is used
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -343,6 +344,7 @@ class AuthenticationManager:
         Raises:
             requests.exceptions.RequestException: If token fetch fails
         """
+        # logic to get the token from contextVar, if it doesn't exist fallback to
         # Try to get cached token
         token = self._token_cache.get()
         
@@ -361,17 +363,38 @@ class AuthenticationManager:
     
     def get_auth_headers(self) -> Dict[str, str]:
         """
-        Get authentication headers based on platform.
-        
-        For CPD platform: Uses bearer token with automatic refresh
-        For cloud platform: Uses bearer token with automatic refresh
-        
+        Get authentication headers for the current request.
+
+        Per-request user token (set by UserTokenMiddleware from the caller's
+        IBM IAM bearer token) takes precedence over the shared service-account
+        token.  Falls back to service-account when no user token is present,
+        e.g. in stdio mode without a __mdm_auth__ arg or for background jobs.
+
         Returns:
-            Headers dictionary with authentication
-        
+            Headers dictionary with Authorization and content-type fields.
+
         Raises:
-            requests.exceptions.RequestException: If token fetch fails (for cpd/cloud)
+            requests.exceptions.RequestException: If service-account token fetch fails.
         """
+        # Per-request identity: check ContextVar set by UserTokenMiddleware first.
+        user_token = get_user_token()
+        if user_token:
+            self.logger.info(
+                "[token-propagation] HOP 5 (auth-manager): using per-user token from "
+                "ContextVar (prefix: %s...)",
+                user_token[:8],
+            )
+            return {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {user_token}",
+            }
+
+        self.logger.debug(
+            "[token-propagation] HOP 5 (auth-manager): no user token in ContextVar — "
+            "using service-account credentials"
+        )
+
         try:
             headers = {
                 "Content-Type": "application/json",
