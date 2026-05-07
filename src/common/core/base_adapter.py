@@ -20,6 +20,7 @@ from typing import Dict, Any, Optional
 
 from config import Config
 from common.auth.authentication_manager import AuthenticationManager
+from common.auth.user_token_context import get_user_token  # used only for 401 retry decision
 
 logger = logging.getLogger(__name__)
 
@@ -122,9 +123,15 @@ class BaseMDMAdapter(ABC):
         Raises:
             requests.exceptions.RequestException: If request fails
         """
-        # Get auth headers from auth manager
+        # get_auth_headers() checks the per-request ContextVar first (set by
+        # UserTokenMiddleware) and falls back to service-account when it is None.
         headers = self._auth_manager.get_auth_headers()
-        
+        self.logger.info(
+            "[token-propagation] HOP 5 (mdm-api): MDM API call to %s using %s",
+            url,
+            "per-user token" if get_user_token() else "service-account token",
+        )
+
         # Defensive check: ensure headers is a dict
         if headers is None:
             self.logger.error("Authentication manager returned None for headers, using empty dict")
@@ -146,19 +153,28 @@ class BaseMDMAdapter(ABC):
         # Execute request
         response = requests.request(method, url, **kwargs)
         
-        # Handle 401 by invalidating token and retrying once
+        # Handle 401 by retrying once.
+        # In service-account mode, invalidate the cached token so a fresh one is fetched.
+        # In per-request user-token mode, the token came from the caller; do not attempt
+        # a service-account refresh — surface the 401 directly so the caller can re-auth.
         if response.status_code == 401:
-            self.logger.warning("Got 401, invalidating token and retrying")
-            self._auth_manager.invalidate_token()
-            
-            # Get fresh auth headers
-            headers = self._auth_manager.get_auth_headers()
-            if 'headers' in kwargs:
-                headers.update(kwargs['headers'])
-            kwargs['headers'] = headers
-            
-            # Retry request
-            response = requests.request(method, url, **kwargs)
+            user_token = get_user_token()
+            if user_token:
+                self.logger.warning(
+                    "[token-propagation] HOP 5 (mdm-api): 401 from MDM API with per-user token "
+                    "(prefix: %s...) — NOT retrying, caller must re-authenticate", user_token[:8]
+                )
+            else:
+                self.logger.warning(
+                    "[token-propagation] HOP 5 (mdm-api): 401 from MDM API in service-account "
+                    "mode — invalidating cached token and retrying once"
+                )
+                self._auth_manager.invalidate_token()
+                headers = self._auth_manager.get_auth_headers()
+                if 'headers' in kwargs:
+                    headers.update(kwargs['headers'])
+                kwargs['headers'] = headers
+                response = requests.request(method, url, **kwargs)
         
         return response
     
