@@ -85,6 +85,12 @@ class BaseService(ABC):
         # Validate CRN and extract tenant ID
         try:
             validated_crn, tenant_id = get_crn_with_precedence(crn)
+            self.logger.info(
+                "[crn-propagation] HOP 4 (base-service): CRN resolved — "
+                "tenant_id=%s, crn=%s",
+                tenant_id,
+                validated_crn,
+            )
         except CRNValidationError as e:
             self.logger.error(f"CRN validation failed: {str(e)}")
             raise CRNValidationError(format_crn_error_response(crn or "None", str(e)))
