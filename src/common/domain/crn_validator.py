@@ -116,35 +116,45 @@ def validate_and_get_crn(crn: Optional[str] = None) -> Tuple[str, str]:
 def get_crn_with_precedence(crn: Optional[str] = None) -> Tuple[str, str]:
     """Get CRN with precedence: 1) provided crn, 2) cloud env CRN, 3) default on-prem CRN."""
     platform = Config.M360_TARGET_PLATFORM
-    
-    # Priority 1: Explicitly provided CRN
+
+    # Priority 1: Explicitly provided CRN (injected by TokenInjectingInterceptor from
+    # the caller's X-MDM-CRN header — this is the per-request tenant identifier).
     if crn:
-        logger.info(f"Using explicitly provided CRN: {crn}")
+        logger.info(
+            "[crn-propagation] HOP 4 (crn-validator): using per-request CRN from tool arg: %s",
+            crn,
+        )
         return validate_and_get_crn(crn)
-    
-    # Priority 2: Platform-specific logic
+
+    # Priority 2: Platform-specific fallback
     if platform == "cloud":
-        # For cloud platform, use API_CLOUD_CRN from environment
         if CLOUD_CRN:
-            logger.info(f"Using cloud CRN from environment: {CLOUD_CRN}")
+            logger.info(
+                "[crn-propagation] HOP 4 (crn-validator): no per-request CRN — "
+                "falling back to API_CLOUD_CRN env var: %s",
+                CLOUD_CRN,
+            )
             return validate_and_get_crn(CLOUD_CRN)
         else:
-            # No CRN configured for cloud platform
             error_msg = (
                 "No CRN information found for cloud platform. "
                 "Please provide a CRN explicitly or set API_CLOUD_CRN in environment variables."
             )
-            logger.error(error_msg)
+            logger.error("[crn-propagation] HOP 4 (crn-validator): %s", error_msg)
             raise CRNValidationError(error_msg)
-    
+
     elif platform in ["cpd", "local"]:
-        # For CPD/Local platforms, use default on-prem CRN
-        logger.info(f"Using default on-prem CRN for {platform} platform: {DEFAULT_CRN}")
+        logger.info(
+            "[crn-propagation] HOP 4 (crn-validator): no per-request CRN — "
+            "using default on-prem CRN for %s platform: %s",
+            platform,
+            DEFAULT_CRN,
+        )
         return validate_and_get_crn(DEFAULT_CRN)
-    
+
     else:
         error_msg = f"Unknown platform: {platform}. Expected 'cloud', 'cpd', or 'local'."
-        logger.error(error_msg)
+        logger.error("[crn-propagation] HOP 4 (crn-validator): %s", error_msg)
         raise CRNValidationError(error_msg)
 
 

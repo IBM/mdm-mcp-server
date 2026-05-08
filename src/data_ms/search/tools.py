@@ -28,8 +28,8 @@ def get_search_service() -> SearchService:
 
 def search_master_data(
     ctx: Context,
-    crn: Optional[str],
-    request: SearchMasterDataRequest
+    request: SearchMasterDataRequest,
+    crn: Optional[str] = None
 ) -> SearchResponse:
     """
     Searches for ANY type of Master Data in IBM MDM - use search_type parameter to specify: "record", "entity", "relationship", or "hierarchy_node".
