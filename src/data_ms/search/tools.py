@@ -37,6 +37,7 @@ def search_master_data(
     crn: Optional[str] = None,
     include_attributes: Optional[List[str]] = None,
     exclude_attributes: Optional[List[str]] = None,
+    crn: Optional[str] = None
 ) -> SearchResponse:
     """
     Searches for ANY type of Master Data in IBM MDM - use search_type parameter to specify: "record", "entity", "relationship", or "hierarchy_node".
@@ -66,6 +67,7 @@ def search_master_data(
     
     Args:
         ctx: MCP Context object (automatically injected) - provides session information
+        crn: Cloud Resource Name identifying the tenant (optional, defaults to On-Prem tenant)
         search_type: Type of data to search for. Options: "record", "entity", "relationship", "hierarchy_node"
         query: The search query object containing expressions and operations. Structure:
                 {
