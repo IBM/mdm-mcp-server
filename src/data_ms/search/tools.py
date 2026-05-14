@@ -7,7 +7,7 @@ Search tools for IBM MDM MCP server.
 """
 
 import logging
-from typing import List, Literal, Optional
+from typing import Optional
 
 from fastmcp import Context
 from .service import SearchService
@@ -28,15 +28,8 @@ def get_search_service() -> SearchService:
 
 def search_master_data(
     ctx: Context,
-    search_type: Literal["record", "relationship", "entity", "hierarchy_node"],
-    query: dict,
-    crn: Optional[str] = None,
-    filters: Optional[List[dict]] = None,
-    limit: int = 10,
-    offset: int = 0,
-    include_total_count: bool = True,
-    include_attributes: Optional[List[str]] = None,
-    exclude_attributes: Optional[List[str]] = None,
+    request: SearchMasterDataRequest,
+    crn: Optional[str] = None
 ) -> SearchResponse:
     """
     Searches for ANY type of Master Data in IBM MDM - use search_type parameter to specify: "record", "entity", "relationship", or "hierarchy_node".
@@ -66,48 +59,47 @@ def search_master_data(
     
     Args:
         ctx: MCP Context object (automatically injected) - provides session information
-        search_type: Type of data to search for. Options: "record", "entity", "relationship", "hierarchy_node"
-        query: The search query object containing expressions and operations. Structure:
-            {
-                "expressions": [<list of Expression objects>],
-                "operation": "and" | "or"  (optional, default: "and")
-            }
-
-            Each Expression can be:
-            - Simple expression: {"property": "complete.nested.path", "condition": "equal", "value": "search_value"}
-              * MUST use complete paths like "legal_name.last_name", NOT "legal_name"
-              * Validation will reject incomplete paths
-            - Full-text expression: {"property": "*", "condition": "contains", "value": "search_value"}
-              * Use ONLY as fallback after specific field search fails
-              * Searches ALL fields (slower but comprehensive)
-            - Nested expression: {"operation": "or", "expressions": [<list of expressions>]}
-
-            Available conditions:
-            - "equal", "not_equal": Exact match or non-match
-            - "greater_than", "greater_than_equal", "less_than", "less_than_equal": Numeric comparisons
-            - "starts_with", "ends_with", "contains", "not_contains": String pattern matching
-            - "fuzzy": Fuzzy text matching
-            - "has_value", "has_no_value": Check for presence/absence of value
-
-            Property paths MUST be complete nested paths from data model:
-            - CORRECT: "legal_name.last_name", "address.city", "contact.email"
-            - WRONG: "legal_name", "address", "contact" (incomplete - will be rejected)
-            - Use "*" ONLY as fallback after specific search fails
-            - NEVER use "*" as first attempt
-        crn: Cloud Resource Name identifying the tenant (optional, defaults to configured tenant)
-        filters: Optional list of filters to narrow down results. Each filter has:
-            {
-                "type": "record" | "entity" | "source" | "relationship" | "data_quality" | "hierarchy_type" | "hierarchy_number" | "group",
-                "values": [<list of string values>],  (for most filter types)
-                "data_quality_issues": [<list of issues>]  (for data_quality type)
-            }
-
-            Data quality issues: "potential_match", "potential_overlay", "user_tasks_only", "same_source_only", "potential_duplicate"
-        limit: Maximum number of results to return (0-50, default: 10). Use 0 with include_total_count=true for count-only queries.
-        offset: Number of results to skip for pagination (default: 0)
-        include_total_count: Whether to include total count in response (default: true)
-        include_attributes: Optional list of attribute paths to include in results
-        exclude_attributes: Optional list of attribute paths to exclude from results
+        crn: Cloud Resource Name identifying the tenant (optional, defaults to On-Prem tenant)
+        request: SearchRecordsRequest containing:
+            - search_type: Type of data to search for. Options: "record", "entity", "relationship", "hierarchy_node"
+            - query: The search query object containing expressions and operations. Structure:
+                {
+                    "expressions": [<list of Expression objects>],
+                    "operation": "and" | "or"  (optional, default: "and")
+                }
+                
+                Each Expression can be:
+                - Simple expression: {"property": "complete.nested.path", "condition": "equal", "value": "search_value"}
+                  * MUST use complete paths like "legal_name.last_name", NOT "legal_name"
+                  * Validation will reject incomplete paths
+                - Full-text expression: {"property": "*", "condition": "contains", "value": "search_value"}
+                  * Use ONLY as fallback after specific field search fails
+                  * Searches ALL fields (slower but comprehensive)
+                - Nested expression: {"operation": "or", "expressions": [<list of expressions>]}
+                
+                Available conditions:
+                - "equal", "not_equal": Exact match or non-match
+                - "greater_than", "greater_than_equal", "less_than", "less_than_equal": Numeric comparisons
+                - "starts_with", "ends_with", "contains", "not_contains": String pattern matching
+                - "fuzzy": Fuzzy text matching
+                - "has_value", "has_no_value": Check for presence/absence of value
+                
+                Property paths MUST be complete nested paths from data model:
+                - CORRECT: "legal_name.last_name", "address.city", "contact.email"
+                - WRONG: "legal_name", "address", "contact" (incomplete - will be rejected)
+                - Use "*" ONLY as fallback after specific search fails
+                - NEVER use "*" as first attempt
+            - filters: Optional list of filters to narrow down results. Each filter has:
+                {
+                    "type": "record" | "entity" | "source" | "relationship" | "data_quality" | "hierarchy_type" | "hierarchy_number" | "group",
+                    "values": [<list of string values>],  (for most filter types)
+                    "data_quality_issues": [<list of issues>]  (for data_quality type)
+                }
+                
+                Data quality issues: "potential_match", "potential_overlay", "user_tasks_only", "same_source_only", "potential_duplicate"
+            - limit: Maximum number of results to return (max 50, default: 10)
+            - offset: Number of results to skip for pagination (default: 0)
+            - include_total_count: Whether to include total count in response (default: true)
     
     Returns:
         Search results containing matched records with pagination info
@@ -247,18 +239,18 @@ def search_master_data(
           )
    """
     service = get_search_service()
-
+    
     result = service.search_master_data(
         ctx=ctx,
-        search_type=search_type,
-        query=query,
-        filters=filters,
-        limit=limit,
-        offset=offset,
-        include_total_count=include_total_count,
+        search_type=request.search_type,
+        query=request.query,
+        filters=request.filters,
+        limit=request.limit,
+        offset=request.offset,
+        include_total_count=request.include_total_count,
         crn=crn,
-        include_attributes=include_attributes,
-        exclude_attributes=exclude_attributes,
+        include_attributes=request.include_attributes,
+        exclude_attributes=request.exclude_attributes
     )
     
     if "error" in result:
