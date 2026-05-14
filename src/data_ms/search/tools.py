@@ -115,135 +115,119 @@ def search_master_data(
     Examples:
         1. Simple search - Find records with last name "Smith":
            search_master_data(
-               request=SearchMasterDataRequest(
-                   search_type="record",
-                   query={
-                       "expressions": [
-                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"}
-                       ]
-                   }
-               )
+               search_type="record",
+               query={
+                   "expressions": [
+                       {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"}
+                   ]
+               }
            )
-       
+
        2. FALLBACK ONLY - Full-text search when specific field search fails (DO NOT use as first attempt):
           search_master_data(
-              request=SearchMasterDataRequest(
-                  search_type="record",
-                  query={
-                      "expressions": [
-                          {"property": "*", "condition": "contains", "value": "Smith"}
-                      ]
-                  }
-              )
+              search_type="record",
+              query={
+                  "expressions": [
+                      {"property": "*", "condition": "contains", "value": "Smith"}
+                  ]
+              }
           )
-       
+
        3. Multiple conditions with AND - Last name "Smith" AND city "Boston":
            search_master_data(
-               request=SearchMasterDataRequest(
-                   search_type="entity",
-                   query={
-                       "expressions": [
-                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
-                           {"property": "address.city", "condition": "equal", "value": "Boston"}
-                       ],
-                       "operation": "and"
-                   }
-               )
+               search_type="entity",
+               query={
+                   "expressions": [
+                       {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
+                       {"property": "address.city", "condition": "equal", "value": "Boston"}
+                   ],
+                   "operation": "and"
+               }
            )
-       
+
        4. Complex nested query - (Last name "Smith" OR "Jones") AND (City "Boston"):
            search_master_data(
-               request=SearchMasterDataRequest(
-                   search_type="entity",
-                   query={
-                       "expressions": [
-                           {
-                               "operation": "or",
-                               "expressions": [
-                                   {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
-                                   {"property": "legal_name.last_name", "condition": "contains", "value": "J"}
-                               ]
-                           },
-                           {"property": "address.city", "condition": "equal", "value": "Boston"}
-                       ],
-                       "operation": "and"
-                   }
-               )
+               search_type="entity",
+               query={
+                   "expressions": [
+                       {
+                           "operation": "or",
+                           "expressions": [
+                               {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
+                               {"property": "legal_name.last_name", "condition": "contains", "value": "J"}
+                           ]
+                       },
+                       {"property": "address.city", "condition": "equal", "value": "Boston"}
+                   ],
+                   "operation": "and"
+               }
            )
-       
+
        5. Search with filters - Find person records with last name "Smith":
            search_master_data(
-               request=SearchMasterDataRequest(
-                   search_type="record",
-                   query={
-                       "expressions": [
-                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"}
-                       ]
-                   },
-                   filters=[
-                       {"type": "record", "values": ["person"]}
+               search_type="record",
+               query={
+                   "expressions": [
+                       {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"}
                    ]
-               )
+               },
+               filters=[
+                   {"type": "record", "values": ["person"]}
+               ]
            )
-       
+
        6. Search with data quality filter - Find potential duplicates:
            search_master_data(
-               request=SearchMasterDataRequest(
-                   search_type="record",
-                   query={
-                       "expressions": [
-                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"}
-                       ]
-                   },
-                   filters=[
-                       {"type": "data_quality", "data_quality_issues": ["potential_duplicate"]}
+               search_type="record",
+               query={
+                   "expressions": [
+                       {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"}
                    ]
-               )
+               },
+               filters=[
+                   {"type": "data_quality", "data_quality_issues": ["potential_duplicate"]}
+               ]
            )
-       
+
        7. Advanced nested query - ((Name "Smith" OR "Jones") AND City "Boston") OR (Name "Brown" AND City "New York"):
            search_master_data(
-               request=SearchMasterDataRequest(
-                   search_type="record",
-                   query={
-                       "expressions": [
-                           {
-                               "operation": "and",
-                               "expressions": [
-                                   {
-                                       "operation": "or",
-                                       "expressions": [
-                                           {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
-                                           {"property": "legal_name.last_name", "condition": "equal", "value": "Jones"}
-                                       ]
-                                   },
-                                   {"property": "address.city", "condition": "equal", "value": "Boston"}
-                               ]
-                           },
-                           {
-                               "operation": "and",
-                               "expressions": [
-                                   {"property": "legal_name.last_name", "condition": "equal", "value": "Brown"},
-                                   {"property": "address.city", "condition": "equal", "value": "New York"}
-                               ]
-                           }
-                       ],
-                       "operation": "or"
-                   }
-               )
+               search_type="record",
+               query={
+                   "expressions": [
+                       {
+                           "operation": "and",
+                           "expressions": [
+                               {
+                                   "operation": "or",
+                                   "expressions": [
+                                       {"property": "legal_name.last_name", "condition": "equal", "value": "Smith"},
+                                       {"property": "legal_name.last_name", "condition": "equal", "value": "Jones"}
+                                   ]
+                               },
+                               {"property": "address.city", "condition": "equal", "value": "Boston"}
+                           ]
+                       },
+                       {
+                           "operation": "and",
+                           "expressions": [
+                               {"property": "legal_name.last_name", "condition": "equal", "value": "Brown"},
+                               {"property": "address.city", "condition": "equal", "value": "New York"}
+                           ]
+                       }
+                   ],
+                   "operation": "or"
+               }
            )
-       
+
        8. Browse all entities - Get sample data (use sparingly with small limit):
           search_master_data(
-              request=SearchMasterDataRequest(
-                  search_type="entity",
-                  query={
-                      "expressions": [
-                          {"property": "*", "condition": "contains", "value": "*"}
-                      ]
-                  },
-                  limit=10
-              )
+              search_type="entity",
+              query={
+                  "expressions": [
+                      {"property": "*", "condition": "contains", "value": "*"}
+                  ]
+              },
+              limit=10
           )
    """
     service = get_search_service()
