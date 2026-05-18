@@ -165,4 +165,55 @@ class DataMSAdapter(BaseMDMAdapter):
             f"return_type: {return_type}"
         )
         return self.execute_post(endpoint, search_criteria, params)
+
+    def federated_search(
+        self,
+        query: Dict[str, Any],
+        crn: str,
+        limit: int = 10,
+        offset: int = 0,
+        include_total_count: bool = True,
+        issue_type: str = "potential_match",
+        timezone: str = "UTC",
+        sort_order: str = "desc",
+    ) -> Dict[str, Any]:
+        """
+        Perform a federated search for data quality issues (e.g., potential matches).
+
+        Args:
+            query: Search query containing expressions (same structure as search_master_data)
+            crn: Cloud Resource Name identifying the tenant
+            limit: Maximum number of results to return
+            offset: Number of results to skip for pagination
+            include_total_count: Whether to include total count in response
+            issue_type: Type of data quality issue ("potential_match")
+            timezone: Timezone for date/time values
+            sort_order: Sort order — "asc" or "desc"
+
+        Returns:
+            Federated search results with potential_match_issues and pagination info
+
+        Raises:
+            requests.exceptions.RequestException: If request fails
+        """
+        endpoint = "federated_search"
+
+        params: Dict[str, Any] = {
+            "crn": crn,
+            "limit": str(limit),
+            "offset": str(offset),
+            "include_total_count": str(include_total_count).lower(),
+            "issue_type": issue_type,
+            "timezone": timezone,
+            "sort_order": sort_order,
+        }
+
+        body = {"search_type": "issue", "query": query}
+
+        self.logger.info(
+            "Federated search for issue_type=%s, CRN=%s",
+            issue_type,
+            crn,
+        )
+        return self.execute_post(endpoint, body, params)
     

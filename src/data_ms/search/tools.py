@@ -7,7 +7,7 @@ Search tools for IBM MDM MCP server.
 """
 
 import logging
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Union
 
 from fastmcp import Context
 from .service import SearchService
@@ -35,17 +35,19 @@ def search_master_data(
     limit: int = 10,
     offset: int = 0,
     include_total_count: bool = True,
-    include_attributes: Optional[List[str]] = None,
-    exclude_attributes: Optional[List[str]] = None,
+    include_attributes: Optional[Union[List[str], str]] = None,
+    exclude_attributes: Optional[Union[List[str], str]] = None,
 ) -> SearchResponse:
     """
     Searches for ANY type of Master Data in IBM MDM - use search_type parameter to specify: "record", "entity", "relationship", or "hierarchy_node".
     
-    **Understanding search_type**:
-    - "entity" = Golden records (best version after matching/merging) - use for most queries about people, organizations, etc.
-    - "record" = Source records (individual records before matching) - use only when explicitly asked for source data
-    - "relationship" = Relationships between entities
-    - "hierarchy_node" = Hierarchy structures
+    **Understanding search_type** — EXACTLY 4 valid values, nothing else:
+    - "entity"         = Golden records after matching/merging. Use for ALL entity subtypes: persons, organizations, companies, individuals, etc. NEVER use "person_entity", "organization_entity", or any other compound form — "entity" is the only valid value for every entity subtype.
+    - "record"         = Raw source records before matching. Use ONLY when the user explicitly asks for source/raw data.
+    - "relationship"   = Relationships between entities.
+    - "hierarchy_node" = Hierarchy structures.
+
+    **INVALID values** (will cause a validation error): "person_entity", "organization_entity", "entity_record", or any other string not in the list above.
     
     Supports complex nested AND/OR queries for searching records, entities, relationships, or hierarchy nodes.
     
@@ -66,7 +68,7 @@ def search_master_data(
     
     Args:
         ctx: MCP Context object (automatically injected) - provides session information
-        search_type: Type of data to search for. Options: "record", "entity", "relationship", "hierarchy_node"
+        search_type: MUST be one of exactly these four strings: "record", "entity", "relationship", "hierarchy_node". Do NOT use compound values like "person_entity" or "organization_entity" — use "entity" for all entity subtypes regardless of the business entity type (person, organization, company, etc.).
         query: The search query object containing expressions and operations. Structure:
             {
                 "expressions": [<list of Expression objects>],
@@ -230,6 +232,21 @@ def search_master_data(
               limit=10
           )
    """
+    # Normalize LLM-provided values: bare strings and empty lists → None.
+    # The LLM sometimes sends '*' (include all), '' or [] (no filter) — all mean None.
+    if isinstance(include_attributes, str):
+        include_attributes = None if include_attributes in ("*", "") else [include_attributes]
+    elif isinstance(include_attributes, list) and not include_attributes:
+        include_attributes = None
+
+    if isinstance(exclude_attributes, str):
+        exclude_attributes = None if exclude_attributes in ("*", "") else [exclude_attributes]
+    elif isinstance(exclude_attributes, list) and not exclude_attributes:
+        exclude_attributes = None
+
+    if isinstance(filters, list) and not filters:
+        filters = None
+
     service = get_search_service()
 
     result = service.search_master_data(
