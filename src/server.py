@@ -25,7 +25,7 @@ from config import Config
 from common.auth.token_middleware import UserTokenMiddleware
 
 # Import your tools
-from data_ms.search.tools import search_master_data
+from data_ms.search.tools import search_master_data, SEARCH_TOOL_DESCRIPTION
 from data_ms.records.tools import get_record_by_id, get_records_entities_by_record_id
 from data_ms.entities.tools import get_entity
 from model_ms.model.tools import get_data_model
@@ -49,7 +49,7 @@ TOOLS_MODE = Config.MCP_TOOLS_MODE.lower()
 logger.info(f"Registering tools in '{TOOLS_MODE}' mode")
 
 # Register core tools (always available)
-mcp.add_tool(Tool.from_function(search_master_data, name="search_master_data"))
+mcp.add_tool(Tool.from_function(search_master_data, name="search_master_data", description=SEARCH_TOOL_DESCRIPTION))
 mcp.add_tool(Tool.from_function(get_data_model, name="get_data_model"))
 
 # Register additional tools only in full mode

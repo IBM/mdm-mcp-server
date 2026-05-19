@@ -16,7 +16,7 @@ from .models import (
     SearchResponse
 )
 
-from .tools import search_master_data
+from .tools import search_master_data, SEARCH_TOOL_DESCRIPTION
 
 __all__ = [
     'Expression',
