@@ -17,7 +17,7 @@ from fastmcp import Context
 
 from common.core.base_service import BaseService
 from common.domain.crn_validator import CRNValidationError
-from data_ms.adapters.data_ms_adapter import DataMSAdapter
+from matching_ms.adapters.matching_ms_adapter import MatchingMSAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class CompareService(BaseService):
     Service class for handling record comparison operations.
     
     This class extends BaseService and provides compare-specific functionality:
-    - Record comparison via DataMSAdapter (by record numbers or record data)
+    - Record comparison via MatchingMSAdapter (by record numbers or record data)
     - Compare-specific error handling
     - Validation of comparison parameters
     
@@ -35,23 +35,23 @@ class CompareService(BaseService):
     - Session and CRN validation
     - Common error handling patterns
     
-    Uses DataMSAdapter for:
-    - HTTP communication with Data Microservice
+    Uses MatchingMSAdapter for:
+    - HTTP communication with Matching Microservice
     - Compare endpoint operations
     
     The compare functions in tools.py use these methods to compare records.
     """
     
-    def __init__(self, adapter: Optional[DataMSAdapter] = None):
+    def __init__(self, adapter: Optional[MatchingMSAdapter] = None):
         """
-        Initialize the compare service with a Data MS adapter.
+        Initialize the compare service with a Matching MS adapter.
         
         Args:
-            adapter: Optional DataMSAdapter instance (creates default if None)
+            adapter: Optional MatchingMSAdapter instance (creates default if None)
         """
-        super().__init__(adapter or DataMSAdapter())
+        super().__init__(adapter or MatchingMSAdapter())
         # Store typed adapter reference for type checking
-        self.adapter: DataMSAdapter = self.adapter  # type: ignore
+        self.adapter: MatchingMSAdapter = self.adapter  # type: ignore
     
     def fetch_comparison_from_api(
         self,
