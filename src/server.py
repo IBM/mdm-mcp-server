@@ -29,6 +29,7 @@ from data_ms.search.tools import search_master_data, SEARCH_TOOL_DESCRIPTION
 from data_ms.records.tools import get_record_by_id, get_records_entities_by_record_id
 from data_ms.entities.tools import get_entity
 from model_ms.model.tools import get_data_model
+from matching_ms.linkage_rule.tools import apply_linkage_rules
 
 # Load environment variables
 load_dotenv()
@@ -54,10 +55,11 @@ mcp.add_tool(Tool.from_function(get_data_model, name="get_data_model"))
 
 # Register additional tools only in full mode
 if TOOLS_MODE == "full":
-    logger.info("Registering additional tools: get_record, get_entity, get_records_entities_by_record_id")
+    logger.info("Registering additional tools: get_record, get_entity, get_records_entities_by_record_id, apply_linkage_rules")
     mcp.add_tool(Tool.from_function(get_record_by_id, name="get_record"))
     mcp.add_tool(Tool.from_function(get_entity, name="get_entity"))
     mcp.add_tool(Tool.from_function(get_records_entities_by_record_id, name="get_records_entities_by_record_id"))
+    mcp.add_tool(Tool.from_function(apply_linkage_rules, name="apply_linkage_rules"))
 
 @mcp.prompt()
 def match360_mdm_assistant() -> str:
@@ -151,3 +153,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
