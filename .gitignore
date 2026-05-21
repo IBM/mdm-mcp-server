@@ -180,3 +180,4 @@ cython_debug/
 sonar-report.json
 pylint-report.txt
 bandit-report.json
+.DS_Store
