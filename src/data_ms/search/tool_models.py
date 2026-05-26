@@ -34,9 +34,9 @@ class SearchMasterDataRequest(BaseModel):
     
     limit: int = Field(
         default=10,
-        ge=1,
+        ge=0,
         le=50,
-        description="Maximum number of results to return (1-50)"
+        description="Maximum number of results to return (0-50). Use 0 with include_total_count=true for count-only queries."
     )
     
     offset: int = Field(
