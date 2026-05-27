@@ -202,4 +202,3 @@ class LinkageRulesService(BaseService):
         except Exception as e:
             return self.handle_unexpected_error(e, "preview linkage rules")
 
-# Made with Bob

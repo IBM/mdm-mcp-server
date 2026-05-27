@@ -128,4 +128,3 @@ def preview_linkage_rules(
         create_rule_for_non_existent_derived_data
     )
 
-# Made with Bob

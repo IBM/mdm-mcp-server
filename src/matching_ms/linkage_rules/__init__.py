@@ -6,4 +6,3 @@
 Linkage rules module for IBM MDM MCP server.
 """
 
-# Made with Bob

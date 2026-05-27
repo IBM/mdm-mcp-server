@@ -6,4 +6,3 @@
 Adapters for matching microservice.
 """
 
-# Made with Bob

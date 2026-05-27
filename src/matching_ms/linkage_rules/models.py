@@ -69,4 +69,3 @@ class LinkageRulesPreviewResponse(BaseModel):
         description="Preview of impacted entities by entity type"
     )
 
-# Made with Bob

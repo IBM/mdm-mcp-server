@@ -173,4 +173,46 @@ class MatchingMSAdapter(BaseMDMAdapter):
         
         response.raise_for_status()
         return response.json()
+    
+    def get_matching_algorithm(
+        self,
+        record_type: str,
+        crn: str,
+        template: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Retrieve the matching algorithm for a given record type.
+        
+        A matching algorithm contains the matching metadata for a given record type
+        and is comprised of standardization, bucket generation and comparison sections.
+        
+        Args:
+            record_type: The data type identifier of source records (e.g., 'person', 'organization', 'contract')
+            crn: Cloud Resource Name identifying the tenant
+            template: Response will return the default template algorithm when set to true (default: False)
+            
+        Returns:
+            Algorithm dictionary containing:
+            - locale: The request language and location
+            - encryption: Asymmetric encryption configuration
+            - standardizers: Collection of standardizer definitions
+            - entity_types: Collection of entity type definitions
+            - bucket_group_bit_length: Bit length for bucket group
+            
+        Raises:
+            requests.exceptions.RequestException: If request fails
+        """
+        endpoint = f"algorithms/{record_type}"
+        
+        params = {
+            "crn": crn,
+            "template": str(template).lower()
+        }
+        
+        self.logger.info(
+            f"Fetching matching algorithm for record_type: {record_type}, "
+            f"template: {template}, CRN: {crn}"
+        )
+        
+        return self.execute_get(endpoint, params)
 
