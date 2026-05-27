@@ -7,12 +7,12 @@ Search tools for IBM MDM MCP server.
 """
 
 import logging
-from typing import Annotated, List, Literal, Optional
+from typing import Annotated, List, Literal, Optional, Union
 
 from fastmcp import Context
 from pydantic import Field
 from .service import SearchService
-from .tool_models import SearchResponse, SearchMasterDataRequest, SearchMasterDataResponse, SearchErrorResponse
+from .tool_models import SearchResponse, SearchMasterDataResponse, SearchErrorResponse
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +42,9 @@ def search_master_data(
         description="Optional list of filters to narrow down results"
     )] = None,
     limit: Annotated[int, Field(
-        ge=1,
+        ge=0,
         le=50,
-        description="Maximum number of results to return (1-50)"
+        description="Maximum number of results to return (0-50). Use 0 with include_total_count=true for count-only queries."
     )] = 10,
     offset: Annotated[int, Field(
         ge=0,
@@ -53,15 +53,15 @@ def search_master_data(
     include_total_count: Annotated[bool, Field(
         description="Whether to include total count in response"
     )] = True,
-    include_attributes: Annotated[Optional[List[str]], Field(
-        description=("Optional list of attribute paths to include in results (e.g., ['legal_name.given_name', 'address.city'])." 
+    include_attributes: Annotated[Optional[Union[List[str], str]], Field(
+        description=("Optional list of attribute paths to include in results (e.g., ['legal_name.given_name', 'address.city'])."
                      "DO NOT set this field unless the user explicitly asks to see only specific attributes."
                      "When null (default), all attributes are returned - this is the correct behavior "
                      "for most queries. Only use this to narrow results when the user says something like "
                      "'show me only names and addresses'."
                      )
     )] = None,
-    exclude_attributes: Annotated[Optional[List[str]], Field(
+    exclude_attributes: Annotated[Optional[Union[List[str], str]], Field(
         description=("Optional list of attribute paths to exclude from results (e.g., ['legal_name.given_name', 'address.city'])"
                      "DO NOT set this field unless the user explicitly asks to hide specific attributes. "
                      "When null (default), no attributes are excluded."
@@ -71,6 +71,19 @@ def search_master_data(
     """
     Search Master Data
    """
+    if isinstance(include_attributes, str):
+        include_attributes = None if include_attributes in ("*", "") else [include_attributes]
+    elif isinstance(include_attributes, list) and not include_attributes:
+        include_attributes = None
+
+    if isinstance(exclude_attributes, str):
+        exclude_attributes = None if exclude_attributes in ("*", "") else [exclude_attributes]
+    elif isinstance(exclude_attributes, list) and not exclude_attributes:
+        exclude_attributes = None
+
+    if isinstance(filters, list) and not filters:
+        filters = None
+
     service = get_search_service()
 
     result = service.search_master_data(

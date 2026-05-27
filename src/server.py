@@ -26,6 +26,7 @@ from common.auth.token_middleware import UserTokenMiddleware
 
 # Import your tools
 from data_ms.search.tools import search_master_data, SEARCH_TOOL_DESCRIPTION
+from data_ms.federated_search.tools import search_potential_match_issues, FEDERATED_SEARCH_TOOL_DESCRIPTION
 from data_ms.records.tools import get_record_by_id, get_records_entities_by_record_id
 from data_ms.entities.tools import get_entity
 from matching_ms.compare.tools import compare_records
@@ -53,6 +54,7 @@ logger.info(f"Registering tools in '{TOOLS_MODE}' mode")
 
 # Register core tools (always available)
 mcp.add_tool(Tool.from_function(search_master_data, name="search_master_data", description=SEARCH_TOOL_DESCRIPTION))
+mcp.add_tool(Tool.from_function(search_potential_match_issues, name="search_potential_match_issues", description=FEDERATED_SEARCH_TOOL_DESCRIPTION))
 mcp.add_tool(Tool.from_function(get_data_model, name="get_data_model"))
 
 # Register additional tools only in full mode
@@ -122,6 +124,18 @@ User: "Count entities by type"
 2. For each type: search_master_data(search_type="entity", filters=[{"type":"entity","values":["person"]}], limit=1, include_total_count=true)
 3. Use total_count from response for statistics
 
+**Tool Selection — search_master_data vs search_potential_match_issues:**
+
+| User Intent | Tool to Use |
+|---|---|
+| Find people, organizations, records, entities | `search_master_data` |
+| Potential matches / potential duplicates / data quality issues | `search_potential_match_issues` |
+
+`search_potential_match_issues` wraps the `/federated_search` endpoint and returns `potential_match_issues` (not `results`).
+- To list all issues: query={"expressions": [{"property": "*", "condition": "equal", "value": "*"}]}
+- To count only: add limit=0, include_total_count=True
+- Does NOT require fetching the data model first
+
 **Common Mistakes to Avoid:**
 - ❌ Calling search_master_data without ever fetching the data model in the session
 - ❌ Fetching data model repeatedly when you already have it
@@ -129,6 +143,7 @@ User: "Count entities by type"
 - ❌ Using property="*" as first attempt (only use as fallback)
 - ❌ Using search_type="record" when user asks about entities (default to "entity")
 - ❌ Giving up after 0 results or validation error (try full-text search with property="*")
+- ❌ Using search_master_data for potential match / duplicate queries (use search_potential_match_issues instead)
 
 **Current Task:**
 Await user query and begin Step 1 immediately.
