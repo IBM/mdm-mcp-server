@@ -113,5 +113,64 @@ class MatchingMSAdapter(BaseMDMAdapter):
         
         response.raise_for_status()
         return response.json()
+    
+    def preview_linkage_rules(
+        self,
+        entity_type: str,
+        rules: List[Dict[str, Any]],
+        crn: str,
+        create_rule_for_non_existent_derived_data: Optional[bool] = None
+    ) -> Dict[str, Any]:
+        """
+        Preview entity composition by hypothesizing linkage rules.
+        
+        This endpoint provides a preview of the impacted entities by hypothesizing
+        one or more manual link/unlink rules without actually applying them.
+        
+        Args:
+            entity_type: The data type identifier of entity (e.g., 'person_entity', 'organization_entity')
+            rules: Collection of linkage rules, each containing:
+                - record_numbers: List of record numbers to link/unlink
+                - rule_type: Type of rule - 'link' or 'unlink'
+                - description: Optional description of the rule
+            crn: Cloud Resource Name identifying the tenant
+            create_rule_for_non_existent_derived_data: Creates a rule when derived data is not present
+            
+        Returns:
+            Preview results dictionary mapping entity IDs to lists of affected entity IDs
+            
+        Raises:
+            requests.exceptions.RequestException: If request fails
+        """
+        # Build URL manually to avoid double slash issue
+        base_url = self.api_base_url.rstrip('/')
+        url = f"{base_url}/linkage_rules_preview"
+        
+        params = {"crn": crn}
+        
+        # Prepare request body
+        body: Dict[str, Any] = {
+            "entity_type": entity_type,
+            "rules": rules
+        }
+        
+        if create_rule_for_non_existent_derived_data is not None:
+            body["create_rule_for_non_existent_derived_data"] = create_rule_for_non_existent_derived_data
+        
+        self.logger.info(
+            f"Previewing linkage rules for entity_type: {entity_type}, "
+            f"rules count: {len(rules)}, CRN: {crn}"
+        )
+        
+        self.logger.debug(f"POST {url} with params: {params}")
+        
+        response = self._execute_request_with_retry(
+            'POST',
+            url,
+            json=body,
+            params=params
+        )
+        
+        response.raise_for_status()
+        return response.json()
 
-# Made with Bob
