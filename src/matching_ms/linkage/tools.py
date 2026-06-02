@@ -33,7 +33,7 @@ def apply_linkage_rules(
     
     This tool allows you to perform entity resolution operations by applying
     linkage rules to a set of records. It supports link, unlink, merge, and
-    unlink actions to manage entity relationships.
+    unmerge actions to manage entity relationships.
     
     The operation is persisted for audit and tracking purposes.
     

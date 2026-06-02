@@ -30,7 +30,7 @@ from data_ms.federated_search.tools import search_potential_match_issues, FEDERA
 from data_ms.records.tools import get_record_by_id, get_records_entities_by_record_id
 from data_ms.entities.tools import get_entity
 from model_ms.model.tools import get_data_model
-from matching_ms.linkage_rule.tools import apply_linkage_rules
+from matching_ms.linkage.tools import apply_linkage_rules
 
 # Load environment variables
 load_dotenv()
