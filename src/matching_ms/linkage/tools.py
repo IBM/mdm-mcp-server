@@ -35,8 +35,6 @@ def apply_linkage_rules(
     linkage rules to a set of records. It supports link, unlink, merge, and
     unmerge actions to manage entity relationships.
     
-    The operation is persisted for audit and tracking purposes.
-    
     Args:
         ctx: MCP Context object (automatically injected) - provides session information
         entity_type: The entity type (e.g., "us_bank_entity", "person", "organization")
@@ -55,7 +53,6 @@ def apply_linkage_rules(
             - success: Boolean indicating whether the operation succeeded
             - action: The action that was performed
             - entity_state: Current state of the entities after the operation
-            - resolution_key: Key for retrieving the persisted resolution
         
     Raises:
         CRNValidationError: If CRN validation fails

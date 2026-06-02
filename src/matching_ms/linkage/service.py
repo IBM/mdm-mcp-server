@@ -6,13 +6,12 @@
 Linkage rule service for IBM MDM MCP server.
 
 This module provides a service class that encapsulates linkage rule business logic,
-including entity resolution operations and resolution persistence.
+including entity resolution operations.
 """
 
 import logging
 import requests
 from typing import Dict, Any, Optional, List
-from datetime import datetime
 
 from fastmcp import Context
 
@@ -29,7 +28,6 @@ class LinkageRuleService(BaseService):
     
     This class extends BaseService and provides linkage rule-specific functionality:
     - Linkage rule application via MatchingMSAdapter
-    - Resolution persistence (storing resolution decisions)
     - Entity resolution-specific error handling
     
     Inherits from BaseService:
@@ -54,79 +52,6 @@ class LinkageRuleService(BaseService):
         super().__init__(adapter or MatchingMSAdapter())
         # Store typed adapter reference for type checking
         self.adapter: MatchingMSAdapter = self.adapter  # type: ignore
-        # In-memory resolution store (in production, this would be a database)
-        self._resolutions: Dict[str, Dict[str, Any]] = {}
-    
-    def _persist_resolution(
-        self,
-        entity_type: str,
-        rule_type: str,
-        record_numbers: List[str],
-        response: Dict[str, Any],
-        crn: str,
-        description: str
-    ) -> str:
-        """
-        Persist resolution decision for tracking and audit purposes.
-        
-        In a production system, this would write to a database table.
-        For this implementation, we use an in-memory store.
-        
-        Args:
-            entity_type: The entity type
-            rule_type: The rule type that was performed
-            record_numbers: List of record numbers involved
-            response: Response from the API
-            crn: Cloud Resource Name
-            description: Description of the rule (required)
-            
-        Returns:
-            Resolution key for retrieving the persisted resolution
-        """
-        # Generate a key for the resolution
-        timestamp = datetime.utcnow().isoformat()
-        resolution_key = f"{entity_type}_{rule_type}_{'_'.join(record_numbers[:2])}_{timestamp}"
-        
-        # Store resolution details
-        self._resolutions[resolution_key] = {
-            "entity_type": entity_type,
-            "rule_type": rule_type,
-            "record_numbers": record_numbers,
-            "description": description,
-            "crn": crn,
-            "timestamp": timestamp + "Z",
-            "success": response.get("success", False),
-            "entity_state": response.get("entity_state"),
-            "response": response
-        }
-        
-        self.logger.info(
-            f"Persisted resolution: key={resolution_key}, rule_type={rule_type}, "
-            f"success={response.get('success', False)}"
-        )
-        
-        return resolution_key
-    
-    def get_resolution(self, resolution_key: str) -> Optional[Dict[str, Any]]:
-        """
-        Retrieve a persisted resolution by key.
-        
-        Args:
-            resolution_key: The resolution key
-            
-        Returns:
-            Resolution details if found, None otherwise
-        """
-        return self._resolutions.get(resolution_key)
-    
-    def list_resolutions(self) -> Dict[str, Dict[str, Any]]:
-        """
-        List all persisted resolutions.
-        
-        Returns:
-            Dictionary of all resolutions keyed by resolution_key
-        """
-        return self._resolutions.copy()
     
     def apply_linkage_rules_from_api(
         self,
@@ -179,8 +104,7 @@ class LinkageRuleService(BaseService):
         This method orchestrates the linkage rule application process:
         1. Validates session and CRN
         2. Applies linkage rule via API
-        3. Persists resolution decision
-        4. Returns standardized response
+        3. Returns standardized response
         
         Args:
             ctx: MCP Context object with session information
@@ -196,7 +120,6 @@ class LinkageRuleService(BaseService):
                 - success: Boolean indicating operation success
                 - action: The action that was performed
                 - entity_state: Current state of the entities after the operation
-                - resolution_key: Key for retrieving the persisted resolution
         """
         try:
             # Validate session and CRN
@@ -260,19 +183,6 @@ class LinkageRuleService(BaseService):
                 description=description,
                 create_rule_for_non_existent_derived_data=create_rule_for_non_existent_derived_data
             )
-            
-            # Persist resolution decision
-            resolution_key = self._persist_resolution(
-                entity_type=entity_type,
-                rule_type=rule_type,
-                record_numbers=record_numbers,
-                response=response,
-                crn=validated_crn,
-                description=description
-            )
-            
-            # Add resolution key to response
-            response["resolution_key"] = resolution_key
             
             self.logger.info(
                 f"Linkage rule applied successfully: rule_type={rule_type}, "
