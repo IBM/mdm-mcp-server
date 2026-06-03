@@ -11,13 +11,14 @@ separating concerns from the tool interface layer and following Hexagonal Archit
 
 import logging
 import requests
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Literal
 
 from fastmcp import Context
 
 from common.core.base_service import BaseService
 from common.domain.crn_validator import CRNValidationError
 from matching_ms.adapters.matching_ms_adapter import MatchingMSAdapter
+from matching_ms.algorithm.formatters import apply_format_transformation
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,8 @@ class AlgorithmService(BaseService):
         self,
         record_type: str,
         validated_crn: str,
-        template: bool = False
+        template: bool = False,
+        format: Literal["full", "compact"] = "compact"
     ) -> Dict[str, Any]:
         """
         Fetch matching algorithm from the IBM MDM API via adapter.
@@ -66,25 +68,31 @@ class AlgorithmService(BaseService):
             record_type: The data type identifier of source records
             validated_crn: Validated Cloud Resource Name
             template: Response will return the default template algorithm when set to true
+            format: Format of the response - "full" or "compact" (default: "compact")
             
         Returns:
-            Algorithm dictionary from the API
+            Algorithm dictionary from the API, optionally transformed
             
         Raises:
             requests.exceptions.RequestException: If API request fails
+            ValueError: If format is invalid
         """
-        return self.adapter.get_matching_algorithm(
+        algorithm = self.adapter.get_matching_algorithm(
             record_type=record_type,
             crn=validated_crn,
             template=template
         )
+        
+        # Apply format transformation
+        return apply_format_transformation(algorithm, format)
     
     def get_matching_algorithm(
         self,
         ctx: Context,
         record_type: str,
         crn: Optional[str] = None,
-        template: bool = False
+        template: bool = False,
+        format: Literal["full", "compact"] = "compact"
     ) -> Dict[str, Any]:
         """
         Retrieve the matching algorithm for a given record type with declarative validation.
@@ -93,7 +101,8 @@ class AlgorithmService(BaseService):
         1. Validates session and CRN
         2. Validates record_type parameter
         3. Fetches algorithm from API
-        4. Handles errors with standardized responses
+        4. Applies format transformation
+        5. Handles errors with standardized responses
         
         A matching algorithm contains the matching metadata for a given record type
         and is comprised of standardization, bucket generation and comparison sections.
@@ -103,6 +112,7 @@ class AlgorithmService(BaseService):
             record_type: The data type identifier of source records (e.g., 'person', 'organization', 'contract')
             crn: Cloud Resource Name identifying the tenant (optional)
             template: Response will return the default template algorithm when set to true (default: False)
+            format: Format of the response - "full" or "compact" (default: "compact")
             
         Returns:
             Algorithm from IBM MDM or error response
@@ -120,28 +130,37 @@ class AlgorithmService(BaseService):
             
             self.logger.info(
                 f"Fetching matching algorithm for record_type: {record_type}, "
-                f"template: {template} "
+                f"template: {template}, format: {format} "
                 f"for tenant: {tenant_id} (CRN: {validated_crn}), session: {session_id}"
             )
             
-            # Fetch algorithm from API
+            # Fetch algorithm from API with format transformation
             return self.fetch_algorithm_from_api(
                 record_type=record_type,
                 validated_crn=validated_crn,
-                template=template
+                template=template,
+                format=format
             )
             
         except CRNValidationError as e:
             # CRN validation errors already formatted
             return e.args[0] if e.args else {"error": str(e), "status_code": 400}
         
+        except ValueError as e:
+            # Format validation errors
+            return {
+                "error": str(e),
+                "status_code": 400
+            }
+        
         except requests.exceptions.RequestException as e:
             return self.handle_api_error(
-                e, 
-                "get matching algorithm", 
+                e,
+                "get matching algorithm",
                 {
                     "record_type": record_type,
-                    "template": template
+                    "template": template,
+                    "format": format
                 }
             )
         

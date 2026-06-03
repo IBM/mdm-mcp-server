@@ -7,10 +7,11 @@ Linkage rules tools for IBM MDM MCP server.
 """
 
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Union
 
 from fastmcp import Context
 from .service import LinkageRulesService
+from .models import LinkageRule, LinkageRulesPreviewResponse
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +20,10 @@ _linkage_rules_service = LinkageRulesService()
 def preview_linkage_rules(
     ctx: Context,
     entity_type: str,
-    rules: List[Dict[str, Any]],
+    rules: List[LinkageRule],
     crn: Optional[str] = None,
     create_rule_for_non_existent_derived_data: Optional[bool] = None
-) -> Dict[str, Any]:
+) -> Union[LinkageRulesPreviewResponse, Dict[str, Any]]:
     """
     Preview entity composition by hypothesizing one or more manual link/unlink rules.
     
@@ -120,10 +121,13 @@ def preview_linkage_rules(
         - Entity "35678330629897216" would become empty (no records)
         - Entity "35678327655087104" would contain both entity IDs
     """
+    # Convert Pydantic models to dictionaries for service layer
+    rules_dicts = [rule.model_dump() for rule in rules]
+    
     return _linkage_rules_service.preview_linkage_rules(
         ctx,
         entity_type,
-        rules,
+        rules_dicts,
         crn,
         create_rule_for_non_existent_derived_data
     )

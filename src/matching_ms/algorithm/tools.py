@@ -7,10 +7,11 @@ Algorithm tools for IBM MDM MCP server.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Literal, Union
 
 from fastmcp import Context
 from .service import AlgorithmService
+from .models import Algorithm
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +21,9 @@ def get_matching_algorithm(
     ctx: Context,
     record_type: str,
     crn: Optional[str] = None,
-    template: bool = False
-) -> Dict[str, Any]:
+    template: bool = False,
+    format: Literal["full", "compact"] = "compact"
+) -> Union[Algorithm, Dict[str, Any]]:
     """
     Retrieve the matching algorithm for a given record type.
     
@@ -41,14 +43,27 @@ def get_matching_algorithm(
         record_type: The data type identifier of source records (e.g., 'person', 'organization', 'contract')
         crn: Cloud Resource Name identifying the tenant (optional, defaults to On-Prem tenant)
         template: When set to true, returns the default template algorithm instead of the configured one (default: False)
+        format: Format of the response (default: "compact")
+            - "full": Returns the complete algorithm with all details including locale, encryption,
+              standardizers, and bucket_generators
+            - "compact": Returns only matching-decision essentials (thresholds, compare_methods, weights)
+              per entity type, reducing payload by ~80% for agent use cases
         
     Returns:
-        Algorithm dictionary from IBM MDM containing:
+        Algorithm dictionary from IBM MDM. Content varies by format:
+        
+        Full format includes:
         - locale: The request language and location (e.g., 'en_us')
         - encryption: Asymmetric encryption configuration
         - standardizers: Collection of standardizer definitions for data normalization
         - entity_types: Collection of entity type definitions and their matching rules
         - bucket_group_bit_length: Bit length for bucket group (optional)
+        
+        Compact format includes (per entity type):
+        - clerical_review_threshold: Threshold for manual review
+        - auto_link_threshold: Threshold for automatic linking
+        - weights: Agreement/disagreement weight curve for match scoring
+        - compare_methods: Flattened comparison methods with functions, labels, inputs, and weights
         
     Examples:
         # Get the matching algorithm for person records
@@ -73,23 +88,53 @@ def get_matching_algorithm(
             crn="crn:v1:staging:public:mdm-oc:us-south:a/account123:instance456::"
         )
         
-    Response Format:
+        # Get compact format (default) for agent use
+        result = get_matching_algorithm(
+            record_type="person",
+            format="compact"
+        )
+        
+        # Get full format with all details
+        result = get_matching_algorithm(
+            record_type="person",
+            format="full"
+        )
+        
+    Response Format (Full):
         {
             "locale": "en_us",
             "encryption": {},
-            "standardizers": {
-                "standardizer_name": {
-                    "type": "standardizer_type",
-                    "config": {}
-                }
-            },
+            "standardizers": {...},
             "entity_types": {
                 "person_entity": {
-                    "matching_rules": [],
-                    "comparison_methods": []
+                    "clerical_review_threshold": 16,
+                    "auto_link_threshold": 20,
+                    "weights": [0, 1, 2, ...],
+                    "compare_methods": [...],
+                    "standardizers": [...],
+                    "bucket_generators": [...]
                 }
             },
             "bucket_group_bit_length": 4
+        }
+        
+    Response Format (Compact):
+        {
+            "entity_types": {
+                "person_entity": {
+                    "clerical_review_threshold": 16,
+                    "auto_link_threshold": 20,
+                    "weights": [0, 1, 2, ...],
+                    "compare_methods": [
+                        {
+                            "compare_function": "exact_match",
+                            "label": "First Name",
+                            "inputs": ["given_name"],
+                            "weight": 5
+                        }
+                    ]
+                }
+            }
         }
         
     Use Cases:
@@ -102,7 +147,8 @@ def get_matching_algorithm(
         ctx,
         record_type,
         crn,
-        template
+        template,
+        format
     )
 
 # Made with Bob

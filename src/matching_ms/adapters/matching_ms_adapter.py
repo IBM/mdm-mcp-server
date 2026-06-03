@@ -67,10 +67,6 @@ class MatchingMSAdapter(BaseMDMAdapter):
         Raises:
             requests.exceptions.RequestException: If request fails
         """
-        # Build URL manually to avoid double slash issue
-        # Remove trailing slash from base URL if present
-        base_url = self.api_base_url.rstrip('/')
-        url = f"{base_url}/compare"
         
         params = {
             "details": details,
@@ -101,18 +97,7 @@ class MatchingMSAdapter(BaseMDMAdapter):
                 f"for entity_type: {entity_type}, record_type: {record_type}, CRN: {crn}"
             )
         
-        # Use direct request execution instead of execute_post to use custom URL
-        self.logger.debug(f"POST {url} with params: {params}")
-        
-        response = self._execute_request_with_retry(
-            'POST',
-            url,
-            json=body,
-            params=params
-        )
-        
-        response.raise_for_status()
-        return response.json()
+        return self.execute_post("compare", body, params)
     
     def preview_linkage_rules(
         self,
@@ -142,9 +127,6 @@ class MatchingMSAdapter(BaseMDMAdapter):
         Raises:
             requests.exceptions.RequestException: If request fails
         """
-        # Build URL manually to avoid double slash issue
-        base_url = self.api_base_url.rstrip('/')
-        url = f"{base_url}/linkage_rules_preview"
         
         params = {"crn": crn}
         
@@ -162,17 +144,7 @@ class MatchingMSAdapter(BaseMDMAdapter):
             f"rules count: {len(rules)}, CRN: {crn}"
         )
         
-        self.logger.debug(f"POST {url} with params: {params}")
-        
-        response = self._execute_request_with_retry(
-            'POST',
-            url,
-            json=body,
-            params=params
-        )
-        
-        response.raise_for_status()
-        return response.json()
+        return self.execute_post("linkage_rules_preview", body, params)
     
     def get_matching_algorithm(
         self,
