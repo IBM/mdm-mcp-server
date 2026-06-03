@@ -53,4 +53,3 @@ class Algorithm(BaseModel):
         description="Bit length for bucket group. The default length is 4"
     )
 
-# Made with Bob

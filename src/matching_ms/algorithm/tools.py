@@ -150,5 +150,3 @@ def get_matching_algorithm(
         template,
         format
     )
-
-# Made with Bob

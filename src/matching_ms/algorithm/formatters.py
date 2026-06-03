@@ -175,4 +175,3 @@ def apply_format_transformation(algorithm: Dict[str, Any], format_type: str) -> 
     transformer = FORMAT_TRANSFORMERS[format_type]
     return transformer(algorithm)
 
-# Made with Bob

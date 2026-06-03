@@ -167,4 +167,3 @@ class AlgorithmService(BaseService):
         except Exception as e:
             return self.handle_unexpected_error(e, "get matching algorithm")
 
-# Made with Bob
