@@ -132,7 +132,7 @@ class BaseService(ABC):
     ) -> Dict[str, Any]:
         """
         Handle API request errors with standardized logging and response formatting.
-        
+
         Args:
             error: The request exception that occurred
             operation: Description of the operation that failed (e.g., "retrieve entity")
@@ -142,10 +142,20 @@ class BaseService(ABC):
             Formatted error response dictionary
         """
         self.logger.error(f"Error during {operation}: {str(error)}")
-        if hasattr(error, 'response') and error.response:
+        
+        # Try to parse IBM MDM error response
+        if hasattr(error, 'response') and error.response is not None:
             self.logger.error(f"Response status: {error.response.status_code}")
             self.logger.error(f"Response body: {error.response.text}")
+            try:
+                error_json = error.response.json()
+                if isinstance(error_json, dict) and 'errors' in error_json:
+                    self.logger.info("Returning IBM MDM error response directly")
+                    return error_json
+            except Exception as parse_error:
+                self.logger.warning(f"Could not parse error response as JSON: {parse_error}")
         
+        # Fallback to wrapped error format
         api_details = context_data or {}
         api_details["response_text"] = error.response.text if hasattr(error, 'response') and error.response else None
         

@@ -36,7 +36,7 @@ class MatchingMSAdapter(BaseMDMAdapter):
         record_numbers: List[str],
         crn: str,
         description: str,
-        create_rule_for_non_existent_derived_data: bool = True
+        create_rule_for_non_existent_derived_data: bool = False
     ) -> Dict[str, Any]:
         """
         Apply a linkage rule to resolve entity relationships.
@@ -50,7 +50,7 @@ class MatchingMSAdapter(BaseMDMAdapter):
             record_numbers: List of record numbers to apply the rule to
             crn: Cloud Resource Name identifying the tenant
             description: Description of the rule (required)
-            create_rule_for_non_existent_derived_data: Whether to create rule for non-existent derived data (default: True)
+            create_rule_for_non_existent_derived_data: Whether to create rule for non-existent derived data (default: False)
             
         Returns:
             Response dictionary containing:

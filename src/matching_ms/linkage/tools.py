@@ -26,7 +26,7 @@ def apply_linkage_rules(
     record_numbers: List[str],
     description: str,
     crn: Optional[str] = None,
-    create_rule_for_non_existent_derived_data: bool = True
+    create_rule_for_non_existent_derived_data: bool = False
 ) -> Dict[str, Any]:
     """
     Apply a linkage rule to resolve entity relationships in IBM MDM.
@@ -46,7 +46,7 @@ def apply_linkage_rules(
         record_numbers: List of record numbers to apply the rule to (minimum 2 records)
         description: Description of the rule for documentation purposes (required)
         crn: Cloud Resource Name identifying the tenant (optional, defaults to On-Prem tenant)
-        create_rule_for_non_existent_derived_data: Whether to create rule for non-existent derived data (default: True)
+        create_rule_for_non_existent_derived_data: Whether to create rule for non-existent derived data (default: False)
     
     Returns:
         Dictionary containing:
