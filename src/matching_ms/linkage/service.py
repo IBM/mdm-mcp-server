@@ -60,7 +60,7 @@ class LinkageRuleService(BaseService):
         record_numbers: List[str],
         validated_crn: str,
         description: str,
-        create_rule_for_non_existent_derived_data: bool = True
+        create_rule_for_non_existent_derived_data: bool = False
     ) -> Dict[str, Any]:
         """
         Apply linkage rule via the Matching MS API.
@@ -96,7 +96,7 @@ class LinkageRuleService(BaseService):
         record_numbers: List[str],
         description: str,
         crn: Optional[str] = None,
-        create_rule_for_non_existent_derived_data: bool = True
+        create_rule_for_non_existent_derived_data: bool = False
     ) -> Dict[str, Any]:
         """
         Apply a linkage rule to resolve entity relationships.
