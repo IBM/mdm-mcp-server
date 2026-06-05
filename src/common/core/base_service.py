@@ -145,8 +145,11 @@ class BaseService(ABC):
         
         # Try to parse IBM MDM error response
         if hasattr(error, 'response') and error.response is not None:
-            self.logger.error(f"Response status: {error.response.status_code}")
-            self.logger.error(f"Response body: {error.response.text}")
+            self.logger.error(
+                "Response status: %s, Response body: %s",
+                error.response.status_code,
+                error.response.text,
+            )
             try:
                 error_json = error.response.json()
                 if isinstance(error_json, dict) and 'errors' in error_json:
