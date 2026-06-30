@@ -379,21 +379,12 @@ class AuthenticationManager:
         # Per-request identity: check ContextVar set by UserTokenMiddleware first.
         user_token = get_user_token()
         if user_token:
-            self.logger.info(
-                "[token-propagation] HOP 5 (auth-manager): using per-user token from "
-                "ContextVar (prefix: %s...)",
-                user_token[:8],
-            )
             return {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
                 "Authorization": f"Bearer {user_token}",
             }
 
-        self.logger.debug(
-            "[token-propagation] HOP 5 (auth-manager): no user token in ContextVar — "
-            "using service-account credentials"
-        )
 
         try:
             headers = {

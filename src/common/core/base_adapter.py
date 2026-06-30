@@ -126,11 +126,6 @@ class BaseMDMAdapter(ABC):
         # get_auth_headers() checks the per-request ContextVar first (set by
         # UserTokenMiddleware) and falls back to service-account when it is None.
         headers = self._auth_manager.get_auth_headers()
-        self.logger.info(
-            "[token-propagation] HOP 5 (mdm-api): MDM API call to %s using %s",
-            url,
-            "per-user token" if get_user_token() else "service-account token",
-        )
 
         # Defensive check: ensure headers is a dict
         if headers is None:
@@ -161,13 +156,11 @@ class BaseMDMAdapter(ABC):
             user_token = get_user_token()
             if user_token:
                 self.logger.warning(
-                    "[token-propagation] HOP 5 (mdm-api): 401 from MDM API with per-user token "
-                    "(prefix: %s...) — NOT retrying, caller must re-authenticate", user_token[:8]
+                    "401 from MDM API with per-user token — NOT retrying, caller must re-authenticate"
                 )
             else:
                 self.logger.warning(
-                    "[token-propagation] HOP 5 (mdm-api): 401 from MDM API in service-account "
-                    "mode — invalidating cached token and retrying once"
+                    "401 from MDM API in service-account mode — invalidating cached token and retrying once"
                 )
                 self._auth_manager.invalidate_token()
                 headers = self._auth_manager.get_auth_headers()
