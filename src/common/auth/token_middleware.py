@@ -20,9 +20,8 @@ stdio
     key from the arguments before the tool function sees them, and stores the
     bearer token in the same ContextVar.
 
-In both cases, AuthenticationManager.get_auth_headers() reads the ContextVar and
-returns per-user headers when a token is present, falling back to the shared
-service-account token when it is None.
+Both transports require a valid bearer token. Requests without credentials are
+rejected with a PermissionError before any tool handler is invoked.
 """
 
 import logging
@@ -68,24 +67,13 @@ class UserTokenMiddleware(Middleware):
                 bearer = auth_header[len("Bearer "):]
                 if bearer:
                     reset_token = set_user_token(bearer)
-                    logger.info(
-                        "[token-propagation] HOP 4 (http): per-user token extracted from "
-                        "Authorization header for tool '%s' and stored in server ContextVar "
-                        "(prefix: %s...)",
-                        tool_name,
-                        bearer[:8],
-                    )
                 else:
-                    logger.warning(
-                        "[token-propagation] HOP 4 (http): Authorization header present but "
-                        "Bearer value is empty for tool '%s' — using service-account credentials",
-                        tool_name,
+                    raise PermissionError(
+                        f"Authorization required: Bearer token is empty for tool '{tool_name}'"
                     )
             else:
-                logger.info(
-                    "[token-propagation] HOP 4 (http): no Bearer token in Authorization "
-                    "header for tool '%s' — using service-account credentials",
-                    tool_name,
+                raise PermissionError(
+                    f"Authorization required: no Bearer token supplied for tool '{tool_name}'"
                 )
         else:
             # ── stdio transport ─────────────────────────────────────────────
@@ -98,26 +86,14 @@ class UserTokenMiddleware(Middleware):
                     # Strip credential key before the tool function sees the args
                     context.message.arguments = args
                     reset_token = set_user_token(token)
-                    logger.info(
-                        "[token-propagation] HOP 4 (stdio): per-user token extracted from "
-                        "'%s' arg for tool '%s' and stored in server ContextVar (prefix: %s...)",
-                        _MDM_STDIO_CRED_KEY,
-                        tool_name,
-                        token[:8],
-                    )
                 else:
-                    logger.warning(
-                        "[token-propagation] HOP 4 (stdio): '%s' arg present but no "
-                        "access_token for tool '%s' — using service-account credentials",
-                        _MDM_STDIO_CRED_KEY,
-                        tool_name,
+                    raise PermissionError(
+                        f"Authorization required: '{_MDM_STDIO_CRED_KEY}' arg present but "
+                        f"access_token is empty for tool '{tool_name}'"
                     )
             else:
-                logger.info(
-                    "[token-propagation] HOP 4 (stdio): no '%s' arg for tool '%s' — "
-                    "using service-account credentials",
-                    _MDM_STDIO_CRED_KEY,
-                    tool_name,
+                raise PermissionError(
+                    f"Authorization required: '{_MDM_STDIO_CRED_KEY}' arg missing for tool '{tool_name}'"
                 )
 
         try:
@@ -125,8 +101,3 @@ class UserTokenMiddleware(Middleware):
         finally:
             if reset_token is not None:
                 reset_user_token(reset_token)
-                logger.debug(
-                    "[token-propagation] HOP 4: user token cleared from server "
-                    "ContextVar after tool '%s' completed",
-                    tool_name,
-                )

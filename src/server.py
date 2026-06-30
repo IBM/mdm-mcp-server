@@ -160,6 +160,11 @@ def main():
         type=int,
         default=8000,
     )
+    parser.add_argument(
+        "--host",
+        help="Host interface to bind to in HTTP mode (default: 127.0.0.1)",
+        default="127.0.0.1",
+    )
     args = parser.parse_args()
     mode = args.mode
     logger.info(f"Starting MCP server in mode {mode}")
@@ -169,8 +174,9 @@ def main():
     else:
         port_arg = args.port
         port = int(os.getenv("PORT", str(port_arg)))
-        logger.info(f"Starting MCP server on port {port}")
-        mcp.run(transport="streamable-http", port=port)
+        host = os.getenv("HOST", args.host)
+        logger.info(f"Starting MCP server on {host}:{port}")
+        mcp.run(transport="streamable-http", host=host, port=port)
 
 if __name__ == "__main__":
     main()

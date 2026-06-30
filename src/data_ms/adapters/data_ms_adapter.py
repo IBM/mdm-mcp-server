@@ -12,6 +12,7 @@ handling entities, records, and search operations.
 
 import logging
 from typing import Dict, Any, Optional, List
+from urllib.parse import quote
 
 from common.core.base_adapter import BaseMDMAdapter
 
@@ -49,7 +50,7 @@ class DataMSAdapter(BaseMDMAdapter):
         Raises:
             requests.exceptions.RequestException: If request fails
         """
-        endpoint = f"entities/{entity_id}"
+        endpoint = f"entities/{quote(entity_id, safe='')}"
         params = {"crn": crn}
         
         self.logger.info(f"Fetching entity {entity_id} for CRN: {crn}")
@@ -73,7 +74,7 @@ class DataMSAdapter(BaseMDMAdapter):
         Raises:
             requests.exceptions.RequestException: If request fails
         """
-        endpoint = f"records/{record_id}"
+        endpoint = f"records/{quote(record_id, safe='')}"
         params = {"crn": crn}
         
         self.logger.info(f"Fetching record {record_id} for CRN: {crn}")
@@ -97,7 +98,7 @@ class DataMSAdapter(BaseMDMAdapter):
         Raises:
             requests.exceptions.RequestException: If request fails
         """
-        endpoint = f"records/{record_id}/entities"
+        endpoint = f"records/{quote(record_id, safe='')}/entities"
         params = {"crn": crn}
         
         self.logger.info(f"Fetching entities for record {record_id} for CRN: {crn}")
