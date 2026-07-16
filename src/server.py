@@ -27,6 +27,7 @@ from common.auth.token_middleware import UserTokenMiddleware
 # Import your tools
 from data_ms.search.tools import search_master_data, SEARCH_TOOL_DESCRIPTION
 from data_ms.federated_search.tools import search_potential_match_issues, FEDERATED_SEARCH_TOOL_DESCRIPTION
+from data_ms.quality_issues.tools import get_quality_issues, QUALITY_ISSUES_TOOL_DESCRIPTION
 from data_ms.records.tools import get_record_by_id, get_records_entities_by_record_id
 from data_ms.entities.tools import get_entity
 from matching_ms.compare.tools import compare_records
@@ -56,6 +57,7 @@ logger.info(f"Registering tools in '{TOOLS_MODE}' mode")
 # Register core tools (always available)
 mcp.add_tool(Tool.from_function(search_master_data, name="search_master_data", description=SEARCH_TOOL_DESCRIPTION))
 mcp.add_tool(Tool.from_function(search_potential_match_issues, name="search_potential_match_issues", description=FEDERATED_SEARCH_TOOL_DESCRIPTION))
+mcp.add_tool(Tool.from_function(get_quality_issues, name="get_quality_issues", description=QUALITY_ISSUES_TOOL_DESCRIPTION))
 mcp.add_tool(Tool.from_function(get_data_model, name="get_data_model"))
 
 # Register additional tools only in full mode
