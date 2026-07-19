@@ -97,7 +97,7 @@ class QualityIssuesResponse(BaseModel):
     offset: int = Field(..., description="Number of elements skipped before this page")
     limit: int = Field(..., description="Maximum number of elements returned per page")
     total_count: Optional[int] = Field(None, description="Total number of quality issues")
-    total_count_wo_tasks: Optional[int] = Field(
+    total_count_without_tasks: Optional[int] = Field(
         None, description="Total count of quality issues that have no tasks created"
     )
     first: Optional[PageLink] = Field(None, description="Link to the first page of results")

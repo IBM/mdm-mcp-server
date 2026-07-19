@@ -70,7 +70,7 @@ Requires the IAM action: **mdm-oc.data.read**
 
 Args:
     ctx: MCP Context object (automatically injected)
-    issue_type: The type of quality issue to retrieve (required). Examples: "potential_overlay", "potential_match"
+    issue_type: The type of quality issue to retrieve (required). Example: "potential_overlay"
     entity_type: Entity type to filter by (optional). Example: "record"
     entity_type_name: Entity type name as defined in the workflow configuration (optional). Example: "person"
     crn: Cloud Resource Name identifying the tenant (optional, defaults to configured tenant)
@@ -81,9 +81,9 @@ Args:
 
 Returns:
     Paged collection of quality issues with pagination links:
-    - issues: list of quality issue records
+    - quality_issues: list of quality issue records
     - total_count: total number of matching issues (when include_total_count=true)
-    - total_count_wo_tasks: total count excluding issues with tasks (when include_total_count_without_tasks=true)
+    - total_count_without_tasks: total count excluding issues with tasks (when include_total_count_without_tasks=true)
     - offset / limit: pagination metadata
     - first / last / next / previous: pagination href links
 
