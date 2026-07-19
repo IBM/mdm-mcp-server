@@ -217,4 +217,3 @@ class DataMSAdapter(BaseMDMAdapter):
             crn,
         )
         return self.execute_post(endpoint, body, params)
-
