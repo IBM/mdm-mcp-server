@@ -3,10 +3,9 @@
 # See the LICENSE file in the project root for license information.
 
 """
-Pydantic models for the get_quality_issues tool interface.
+Pydantic models for the get_data_quality_issues tool interface.
 
-Response shape is based on the JsonQualityIssueResponse schema:
-  GET/POST /mdm/v1/quality_issues
+Response shape based on GET /mdm/v1/data_quality/issues (GetDataQualityIssues schema).
 """
 
 from typing import Optional, List, Union
@@ -18,7 +17,7 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 class PageLink(BaseModel):
-    """A pagination href link returned in first / last / next / previous."""
+    """A pagination href link (first / last / next / previous)."""
 
     href: Optional[str] = Field(None, description="URL for the page of results")
 
@@ -34,17 +33,17 @@ class ResolutionPrediction(BaseModel):
     """Remediation workflow resolution prediction attached to an issue."""
 
     probability: Optional[float] = Field(None, description="Prediction probability score (0–1)")
-    action: Optional[str] = Field(None, description="Predicted resolution action")
+    action: Optional[str] = Field(None, description="Predicted resolution action (e.g. 'link')")
 
     class Config:
         extra = "allow"
 
 
 class DataQualityIssueEntity(BaseModel):
-    """An entity record pair associated with a data quality issue."""
+    """An entity/record pair associated with a data quality issue."""
 
-    record_number: Optional[str] = Field(None, description="Record number of the entity")
-    entity_id: Optional[str] = Field(None, description="Entity identifier")
+    record_number: Optional[str] = Field(None, description="Record number of the source record")
+    entity_id: Optional[str] = Field(None, description="Entity identifier (e.g. 'person_entity-12345')")
 
     class Config:
         extra = "allow"
@@ -52,28 +51,29 @@ class DataQualityIssueEntity(BaseModel):
 
 class DataQualityIssue(BaseModel):
     """
-    A single data quality issue as returned by the API.
+    A single data quality issue as returned by GET /mdm/v1/data_quality/issues.
 
-    Example response item::
+    Example::
 
         {
-            "issue_type": "potential_overlay",
-            "type": "record",
-            "type_name": "person",
-            "id": "123",
-            "number": "123",
-            "created_at": "Jan15, 2023"
+            "type": "potential_match",
+            "entity_type": "person_entity",
+            "entities": [
+                {"record_number": "107618727585906689", "entity_id": "person_entity-107618727577518081"},
+                {"record_number": "107618727585906690", "entity_id": "person_entity-107618727577518082"}
+            ],
+            "created_at": "Jan 15, 2023",
+            "resolution_prediction": {"probability": 0.7095238, "action": "link"},
+            "id": "vs68cku9hfmp"
         }
     """
 
     id: Optional[str] = Field(None, description="Issue identifier")
-    number: Optional[str] = Field(None, description="Issue number")
-    issue_type: Optional[str] = Field(None, description="Type of quality issue (e.g. 'potential_overlay')")
-    type: Optional[str] = Field(None, description="Entity type involved (e.g. 'record')")
-    type_name: Optional[str] = Field(None, description="Entity type name as defined in the workflow configuration (e.g. 'person')")
+    type: Optional[str] = Field(None, description="Issue type (e.g. 'potential_match')")
+    entity_type: Optional[str] = Field(None, description="Entity type (e.g. 'person_entity')")
     created_at: Optional[str] = Field(None, description="Issue creation timestamp")
     entities: Optional[List[DataQualityIssueEntity]] = Field(
-        None, description="Entities associated with the issue"
+        None, description="Entities/records involved in this issue"
     )
     resolution_prediction: Optional[ResolutionPrediction] = Field(
         None, description="Resolution prediction details"
@@ -84,29 +84,29 @@ class DataQualityIssue(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Top-level response
+# Top-level response (HTTP 200)
 # ---------------------------------------------------------------------------
 
-class QualityIssuesResponse(BaseModel):
+class DataQualityIssuesResponse(BaseModel):
     """
-    Successful paged response for get_quality_issues (HTTP 200).
+    Successful paged response for get_data_quality_issues (HTTP 200).
 
-    Maps directly to the API's JsonQualityIssueResponse schema.
+    Maps directly to the API's GetDataQualityIssues schema.
     """
 
-    offset: int = Field(..., description="Number of elements skipped before this page")
-    limit: int = Field(..., description="Maximum number of elements returned per page")
-    total_count: Optional[int] = Field(None, description="Total number of quality issues")
-    total_count_without_tasks: Optional[int] = Field(
-        None, description="Total count of quality issues that have no tasks created"
+    offset: int = Field(..., description="Number of issues skipped before this page")
+    limit: int = Field(..., description="Maximum number of issues returned per page")
+    total_count: Optional[int] = Field(None, description="Total number of issues for the given entities")
+    issues: List[DataQualityIssue] = Field(
+        default_factory=list, description="Paged collection of data quality issues"
+    )
+    potential_match_records: Optional[List[str]] = Field(
+        None, description="Record numbers that are potential matches"
     )
     first: Optional[PageLink] = Field(None, description="Link to the first page of results")
     last: Optional[PageLink] = Field(None, description="Link to the last page of results")
     previous: Optional[PageLink] = Field(None, description="Link to the previous page of results")
     next: Optional[PageLink] = Field(None, description="Link to the next page of results")
-    quality_issues: List[DataQualityIssue] = Field(
-        default_factory=list, description="Paged collection of quality issues"
-    )
 
     class Config:
         extra = "allow"
@@ -138,20 +138,15 @@ class ApiError(BaseModel):
         extra = "allow"
 
 
-class QualityIssuesErrorResponse(BaseModel):
+class DataQualityIssuesErrorResponse(BaseModel):
     """
-    Error response for get_quality_issues (HTTP 400 / 401 / 403 / 404 / 500).
+    Error response for get_data_quality_issues (HTTP 400 / 401 / 403 / 404 / 500).
 
     Matches the IBM MDM API error envelope::
 
-        {
-            "trace": "...",
-            "status_code": 400,
-            "errors": [{"code": "...", "message": "...", ...}]
-        }
+        {"trace": "...", "status_code": 400, "errors": [{"code": "...", "message": "..."}]}
 
-    Also accepts the MCP-internal error shape (``error`` / ``message``) so
-    that CRN-validation and unexpected errors surface correctly.
+    Also accepts the MCP-internal error shape (``error`` / ``message``).
     """
 
     # IBM MDM API error shape
@@ -159,7 +154,7 @@ class QualityIssuesErrorResponse(BaseModel):
     status_code: Optional[int] = Field(None, description="HTTP status code")
     errors: Optional[List[ApiError]] = Field(None, description="List of structured errors")
 
-    # MCP-internal error shape (CRN validation / unexpected errors)
+    # MCP-internal error shape
     error: Optional[str] = Field(None, description="Error type identifier (MCP-internal errors)")
     message: Optional[str] = Field(None, description="Human-readable message (MCP-internal errors)")
     details: Optional[dict] = Field(None, description="Additional error details")
@@ -168,4 +163,4 @@ class QualityIssuesErrorResponse(BaseModel):
         extra = "allow"
 
 
-QualityIssuesResult = Union[QualityIssuesResponse, QualityIssuesErrorResponse]
+DataQualityIssuesResult = Union[DataQualityIssuesResponse, DataQualityIssuesErrorResponse]
