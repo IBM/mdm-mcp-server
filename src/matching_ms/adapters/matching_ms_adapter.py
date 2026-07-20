@@ -247,6 +247,68 @@ class MatchingMSAdapter(BaseMDMAdapter):
             f"Fetching matching algorithm for record_type: {record_type}, "
             f"template: {template}, CRN: {crn}"
         )
-        
         return self.execute_get(endpoint, params)
 
+    def get_data_quality_issues(
+        self,
+        entity_type: str,
+        crn: str,
+        record_number: Optional[int] = None,
+        entities: Optional[List[str]] = None,
+        limit: int = 1,
+        offset: int = 0,
+        fetch_total_count: bool = True,
+        include_tags: bool = False,
+        include_record_attributes: Optional[str] = None,
+        return_linked_issues: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Retrieve list of data quality issues for given entities or record
+        (GET /data_quality/issues).
+
+        Args:
+            entity_type: Required. Data type identifier of entity (e.g. "person_entity")
+            crn: Cloud Resource Name identifying the tenant
+            record_number: Unique identifier of a source record
+            entities: List of entity identifiers (e.g. ["person_entity-12345678"])
+            limit: Number of issues to retrieve (default: 1)
+            offset: Number of issues to skip before returning results (default: 0)
+            fetch_total_count: Return total issue count when True (default: True)
+            include_tags: Include tag details in response (default: False)
+            include_record_attributes: Comma-separated attribute names to include per entity
+            return_linked_issues: Include issues where both records belong to the same entity (default: True)
+
+        Returns:
+            Paged data quality issues response dictionary
+
+        Raises:
+            requests.exceptions.RequestException: If request fails
+        """
+        endpoint = "data_quality/issues"
+
+        params: Dict[str, Any] = {
+            "crn": crn,
+            "entity_type": entity_type,
+            "limit": str(limit),
+            "offset": str(offset),
+            "fetch_total_count": str(fetch_total_count).lower(),
+            "include_tags": str(include_tags).lower(),
+            "return_linked_issues": str(return_linked_issues).lower(),
+        }
+
+        if record_number is not None:
+            params["record_number"] = str(record_number)
+
+        # requests handles list params as repeated keys: ?entities=x&entities=y
+        if entities:
+            params["entities"] = entities
+
+        if include_record_attributes is not None:
+            params["include_record_attributes"] = include_record_attributes
+
+        self.logger.info(
+            "Fetching data quality issues for entity_type=%s, CRN=%s",
+            entity_type,
+            crn,
+        )
+        return self.execute_get(endpoint, params)
