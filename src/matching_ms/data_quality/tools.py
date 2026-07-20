@@ -67,8 +67,6 @@ def get_data_quality_issues(
 DATA_QUALITY_ISSUES_TOOL_DESCRIPTION = """
 Retrieve data quality issues for given entities or a record from IBM MDM.
 
-Requires the IAM action: **mdm-oc.matching.read**
-
 **When to use**:
 - User asks: "Show me quality issues for this entity", "Get potential match issues for person_entity",
   "What issues exist for record 12345678?", "List data quality issues for these entities"
@@ -96,8 +94,11 @@ Returns:
     - first / last / next / previous: pagination href links
 
 Examples:
-    1. Get issues for all records of entity type "person_entity":
-       get_data_quality_issues(entity_type="person_entity")
+    1. Get issues for specific entity IDs :
+       get_data_quality_issues(
+           entity_type="person_entity",
+           entities=["person_entity-107618727577518081", "person_entity-107618727577518082"]
+       )
 
     2. Get issues for a specific record number:
        get_data_quality_issues(
@@ -105,27 +106,21 @@ Examples:
            record_number=12345678
        )
 
-    3. Get issues for specific entity IDs:
-       get_data_quality_issues(
-           entity_type="person_entity",
-           entities=["person_entity-107618727577518081", "person_entity-107618727577518082"]
-       )
-
-    4. Paginate — second page of 10 results:
+    3. Paginate — second page of 10 results:
        get_data_quality_issues(
            entity_type="person_entity",
            limit=10,
            offset=10
        )
 
-    5. Include tag details and record attributes in response:
+    4. Include tag details and record attributes in response:
        get_data_quality_issues(
            entity_type="person_entity",
            include_tags=True,
            include_record_attributes="legal_name,primary_address"
        )
 
-    6. Exclude issues where both records share the same entity:
+    5. Exclude issues where both records share the same entity:
        get_data_quality_issues(
            entity_type="person_entity",
            return_linked_issues=False

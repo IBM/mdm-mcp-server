@@ -312,5 +312,3 @@ class MatchingMSAdapter(BaseMDMAdapter):
             crn,
         )
         return self.execute_get(endpoint, params)
-
-
