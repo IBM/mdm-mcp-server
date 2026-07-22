@@ -77,11 +77,11 @@ def get_entities_by_ids(
 
     Examples:
         # Fetch details for three entities
-        get_entities_by_ids(entity_ids=["entity-001", "entity-002", "entity-003"])
+        get_entities_by_ids(entity_ids=["person_entity-18241782888701320", "person_entity-18241782888701321", "person_entity-18241782888701322"])
 
         # With explicit CRN and custom limit
         get_entities_by_ids(
-            entity_ids=["entity-001", "entity-002"],
+            entity_ids=["person_entity-18241782888701320", "person_entity-18241782888701321"],
             crn="crn:v1:staging:public:mdm-oc:us-south:a/account123:instance456::",
             limit=10
         )
@@ -93,7 +93,7 @@ GET_ENTITIES_BY_IDS_TOOL_DESCRIPTION = """
 Retrieve full details for a list of entities identified by their entity IDs.
 
 Builds an OR search query over all provided IDs against the IBM MDM search API
-(search_type="record", return_type=results_as_entities) and returns the complete
+(search_type="entity", return_type=results_as_entities) and returns the complete
 entity record for every matched ID in a single call.
 
 **When to use this tool:**
@@ -112,5 +112,5 @@ entity record for every matched ID in a single call.
     On error an error object is returned with `error`, `status_code`, and `message` fields.
 
 **Example:**
-    get_entities_by_ids(entity_ids=["entity-001", "entity-002", "entity-003"])
+    get_entities_by_ids(entity_ids=["person_entity-18241782888701320", "person_entity-18241782888701321", "person_entity-18241782888701322"])
 """
