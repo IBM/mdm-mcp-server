@@ -161,7 +161,7 @@ class EntityService(BaseService):
 
             return self._search_service.search_master_data(
                 ctx=ctx,
-                search_type="record",
+                search_type="entity",
                 query=query,
                 filters=None,
                 limit=min(limit, 50),
