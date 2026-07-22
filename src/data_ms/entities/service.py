@@ -152,7 +152,7 @@ class EntityService(BaseService):
                         "message": "entity_ids must be a non-empty list of strings"}
 
             query = {
-                "operation": "OR",
+                "operation": "or",
                 "expressions": [
                     {"property": "entity_id", "condition": "equal", "value": eid}
                     for eid in validated_ids
