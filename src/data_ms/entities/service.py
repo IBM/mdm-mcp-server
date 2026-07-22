@@ -143,7 +143,10 @@ class EntityService(BaseService):
             Search results containing matched entities or error response
         """
         try:
-            validated_ids = [eid.strip() for eid in entity_ids if eid and eid.strip()]
+            validated_ids = [
+                eid.strip().split("-", 1)[1] if "-" in eid.strip() else eid.strip()
+                for eid in entity_ids if eid and eid.strip()
+            ]
             if not validated_ids:
                 return {"error": "validation_error", "status_code": 400,
                         "message": "entity_ids must be a non-empty list of strings"}
