@@ -12,13 +12,14 @@ separating concerns from the tool interface layer and following Hexagonal Archit
 
 import logging
 import requests
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 
 from fastmcp import Context
 
 from common.core.base_service import BaseService
 from common.domain.crn_validator import CRNValidationError
 from data_ms.adapters.data_ms_adapter import DataMSAdapter
+from data_ms.search.service import SearchService
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,7 @@ class EntityService(BaseService):
         super().__init__(adapter or DataMSAdapter())
         # Store typed adapter reference for type checking
         self.adapter: DataMSAdapter = self.adapter  # type: ignore
+        self._search_service = SearchService(self.adapter)
     
     def fetch_entity_from_api(
         self,
@@ -116,3 +118,60 @@ class EntityService(BaseService):
         
         except Exception as e:
             return self.handle_unexpected_error(e, "retrieve entity")
+
+    def get_entities_by_ids(
+        self,
+        ctx: Context,
+        entity_ids: List[str],
+        limit: int = 50,
+        crn: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Get multiple entities by their IDs using the search API.
+
+        Builds an OR query over all provided entity_ids and calls the search
+        endpoint with return_type=results_as_entities so the full entity detail
+        is returned for each matching id.
+
+        Args:
+            ctx: MCP Context object with session information
+            entity_ids: List of entity IDs to retrieve
+            limit: Maximum number of results to return (default 50, max 50)
+            crn: Cloud Resource Name identifying the tenant (optional)
+
+        Returns:
+            Search results containing matched entities or error response
+        """
+        try:
+            validated_ids = [
+                eid.strip().split("-", 1)[1] if "-" in eid.strip() else eid.strip()
+                for eid in entity_ids if eid and eid.strip()
+            ]
+            if not validated_ids:
+                return {"error": "validation_error", "status_code": 400,
+                        "message": "entity_ids must be a non-empty list of strings"}
+
+            query = {
+                "operation": "or",
+                "expressions": [
+                    {"property": "entity_id", "condition": "equal", "value": eid}
+                    for eid in validated_ids
+                ]
+            }
+
+            return self._search_service.search_master_data(
+                ctx=ctx,
+                search_type="entity",
+                query=query,
+                filters=None,
+                limit=min(limit, 50),
+                offset=0,
+                include_total_count=True,
+                crn=crn,
+            )
+
+        except CRNValidationError as e:
+            return e.args[0] if e.args else {"error": str(e), "status_code": 400}
+
+        except Exception as e:
+            return self.handle_unexpected_error(e, "retrieve entities by ids")
