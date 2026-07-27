@@ -50,7 +50,7 @@ class BaseMDMAdapter(ABC):
         self,
         api_base_url: Optional[str] = None,
         timeout: int = 30,
-        verify_ssl: bool = False,
+        verify_ssl: Optional[bool] = None,
         auth_manager: Optional[AuthenticationManager] = None,
         use_shared_auth: bool = True
     ):
@@ -60,13 +60,15 @@ class BaseMDMAdapter(ABC):
         Args:
             api_base_url: Base URL for IBM MDM APIs (default from Config)
             timeout: Request timeout in seconds (default: 30)
-            verify_ssl: Whether to verify SSL certificates (default: False for dev)
+            verify_ssl: Whether to verify SSL certificates. Defaults to
+                        Config.SSL_VERIFY (True unless SSL_VERIFY=false is set).
             auth_manager: Optional authentication manager (overrides use_shared_auth)
             use_shared_auth: Use shared auth manager (default: True for cache efficiency)
         """
         self.api_base_url = api_base_url or Config.API_BASE_URL
         self.timeout = timeout
-        self.verify_ssl = verify_ssl
+        # Resolve at instantiation time so Config reloads in tests are respected.
+        self.verify_ssl = Config.SSL_VERIFY if verify_ssl is None else verify_ssl
         self.logger = logger
         
         # Authentication manager priority:

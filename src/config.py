@@ -28,6 +28,11 @@ class Config:
     API_USERNAME = os.getenv("API_USERNAME", "")
     API_PASSWORD = os.getenv("API_PASSWORD", "")
 
+    # TLS certificate verification for all outbound HTTPS requests.
+    # Defaults to True (secure). Set SSL_VERIFY=false only in isolated
+    # development environments where a self-signed certificate is in use.
+    SSL_VERIFY: bool = os.getenv("SSL_VERIFY", "true").strip().lower() != "false"
+
     # Determine API_BASE_URL based on platform
     if M360_TARGET_PLATFORM == "cloud":
         API_BASE_URL = API_CLOUD_BASE_URL
