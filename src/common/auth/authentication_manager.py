@@ -12,7 +12,6 @@ JWT decoding, and platform-specific authentication for CPD and Cloud platforms.
 
 import logging
 import requests
-import urllib3
 import base64
 import jwt
 import threading
@@ -22,9 +21,6 @@ from datetime import datetime, timedelta
 from config import Config
 from common.auth.token_cache import TokenCache
 from common.auth.user_token_context import get_user_token
-
-# Disable SSL warnings when verify=False is used
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +32,7 @@ _shared_lock = threading.Lock()
 def get_shared_auth_manager(
     platform: Optional[str] = None,
     timeout: int = 30,
-    verify_ssl: bool = False
+    verify_ssl: bool = True
 ) -> 'AuthenticationManager':
     """
     Get or create a shared authentication manager instance.
@@ -108,7 +104,7 @@ class AuthenticationManager:
         self,
         platform: Optional[str] = None,
         timeout: int = 30,
-        verify_ssl: bool = False,
+        verify_ssl: bool = True,
         token_cache: Optional[TokenCache] = None
     ):
         """
