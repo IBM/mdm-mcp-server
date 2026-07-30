@@ -28,7 +28,7 @@ from common.auth.token_middleware import UserTokenMiddleware
 from data_ms.search.tools import search_master_data, SEARCH_TOOL_DESCRIPTION
 from data_ms.federated_search.tools import search_potential_match_issues, FEDERATED_SEARCH_TOOL_DESCRIPTION
 from matching_ms.data_quality.tools import get_data_quality_issues, DATA_QUALITY_ISSUES_TOOL_DESCRIPTION
-from data_ms.records.tools import get_record_by_id, get_records_entities_by_record_id
+from data_ms.records.tools import get_record_by_id, get_records_entities_by_record_id, get_records_by_record_numbers, GET_RECORDS_BY_RECORD_NUMBERS_TOOL_DESCRIPTION
 from data_ms.entities.tools import get_entity, get_entities_by_ids, GET_ENTITIES_BY_IDS_TOOL_DESCRIPTION
 from matching_ms.compare.tools import compare_records
 from matching_ms.linkage_rules.tools import preview_linkage_rules
@@ -62,11 +62,12 @@ mcp.add_tool(Tool.from_function(get_data_model, name="get_data_model"))
 
 # Register additional tools only in full mode
 if TOOLS_MODE == "full":
-    logger.info("Registering additional tools: get_record, get_entity, get_entities_by_ids, get_records_entities_by_record_id, compare_records, preview_linkage_rules, get_matching_algorithm, apply_linkage_rules")
+    logger.info("Registering additional tools: get_record, get_entity, get_entities_by_ids, get_records_entities_by_record_id, get_records_by_record_numbers, compare_records, preview_linkage_rules, get_matching_algorithm, apply_linkage_rules")
     mcp.add_tool(Tool.from_function(get_record_by_id, name="get_record"))
     mcp.add_tool(Tool.from_function(get_entity, name="get_entity"))
     mcp.add_tool(Tool.from_function(get_entities_by_ids, name="get_entities_by_ids", description=GET_ENTITIES_BY_IDS_TOOL_DESCRIPTION))
     mcp.add_tool(Tool.from_function(get_records_entities_by_record_id, name="get_records_entities_by_record_id"))
+    mcp.add_tool(Tool.from_function(get_records_by_record_numbers, name="get_records_by_record_numbers", description=GET_RECORDS_BY_RECORD_NUMBERS_TOOL_DESCRIPTION))
     mcp.add_tool(Tool.from_function(compare_records, name="compare_records"))
     mcp.add_tool(Tool.from_function(preview_linkage_rules, name="preview_linkage_rules"))
     mcp.add_tool(Tool.from_function(get_matching_algorithm, name="get_matching_algorithm"))
