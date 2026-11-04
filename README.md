@@ -31,6 +31,7 @@ This MCP server enables AI assistants like Claude to interact with IBM MDM servi
   - [Option 2: Quick Start with Setup Wizard](#option-2-quick-start-with-setup-wizard)
   - [Option 3: Manual Installation](#option-3-manual-installation)
 - [Configuration](#configuration)
+  - [Configuration Discovery](#configuration-discovery)
 - [Usage](#usage)
 - [Integration with Claude Desktop](#integration-with-claude-desktop)
 - [Running the Server](#running-the-server)
@@ -118,6 +119,39 @@ For advanced users or custom deployments, see the [Manual Installation Guide](do
 ## Configuration
 
 After installation, configure your IBM MDM credentials:
+
+### Configuration Discovery
+
+The root [server.json](server.json) manifest describes the published PyPI package,
+its STDIO launch arguments, and its environment variables using the
+[MCP server manifest format](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/server-json/generic-server-json.md).
+Compatible installers can use `packages[].environmentVariables` to display
+configuration fields, descriptions, defaults, and secret inputs before starting
+the server. Manifest discovery and the configuration interface depend on the
+installer's support for this format.
+
+The manifest selects `--mode stdio` explicitly because the server starts in HTTP
+mode by default. The package identifier `ibm_mdm_mcp_server` matches the console
+command; PyPI treats underscores and hyphens as equivalent in package names.
+
+Choose one platform and provide its connection settings:
+
+| Platform | Required connection settings |
+| --- | --- |
+| `cloud` (default) | `API_CLOUD_BASE_URL`, `API_CLOUD_AUTH_URL`, `API_CLOUD_API_KEY`, `API_CLOUD_CRN` |
+| `cpd` | `API_CPD_BASE_URL`, `API_CPD_AUTH_URL`, `API_USERNAME`, `API_PASSWORD` |
+
+Platform-specific settings are described as conditionally required rather than
+marked globally required, so installers do not demand credentials for both
+platforms. Leave settings for the unused platform unset. Enter actual credentials
+through the installer's secret inputs or your deployment's secret management;
+keep them out of the manifest and version control.
+
+The manifest is pinned to PyPI version `1.0.10` and declares the ten configuration
+variables supported by that release. Source checkouts additionally support
+`SSL_VERIFY`, which the published `1.0.10` package does not read. Keep the package
+version and declared variables aligned when updating the manifest. Registry
+publication is a separate maintainer operation.
 
 ### Using Environment Variables
 
