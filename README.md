@@ -62,6 +62,20 @@ Before you begin, ensure you have:
 
 ## Installation
 
+### FastMCP compatibility
+
+This source tree requires `fastmcp==2.14.7` in both `pyproject.toml` and
+`requirements.txt`. The published `ibm_mdm_mcp_server==1.0.10` package instead
+declares `fastmcp>=2.14.0`, which can select FastMCP 4 and fail at startup with
+`ModuleNotFoundError: No module named 'fastmcp.tools.tool'`. Source builds pin
+the tested version and use its `ToolResult` import path for token middleware.
+
+The pin applies when installing this source tree or a distribution built from
+it. Existing PyPI 1.0.10 artifacts retain their original dependency metadata;
+a new release is needed for package-based installations to receive this fix.
+See the [compatibility validation guide](docs/FASTMCP_COMPATIBILITY.md) for build
+and verification steps.
+
 Choose the installation method that best fits your needs:
 
 ### Option 1: Install from PyPI (Recommended)

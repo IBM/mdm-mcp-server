@@ -28,7 +28,7 @@ import logging
 import mcp.types as mt
 
 from fastmcp.server.middleware.middleware import CallNext, Middleware, MiddlewareContext
-from fastmcp.tools.base import ToolResult
+from fastmcp.tools.tool import ToolResult
 
 from common.auth.user_token_context import reset_user_token, set_user_token
 

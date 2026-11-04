@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 import argparse
 from fastmcp import FastMCP
 from fastapi.middleware.cors import CORSMiddleware
-from fastmcp.tools.tool import Tool
+from fastmcp.tools import Tool
 
 # Import configuration
 from config import Config
