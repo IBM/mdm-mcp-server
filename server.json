@@ -1,0 +1,80 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.IBM/mdm-mcp-server",
+  "title": "IBM MDM MCP Server",
+  "description": "Search and manage IBM Master Data Management data on IBM Cloud or IBM Software Hub.",
+  "repository": {
+    "url": "https://github.com/IBM/mdm-mcp-server",
+    "source": "github"
+  },
+  "version": "1.0.10",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "ibm_mdm_mcp_server",
+      "version": "1.0.10",
+      "runtimeHint": "uvx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "named",
+          "name": "--mode",
+          "value": "stdio"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "M360_TARGET_PLATFORM",
+          "description": "IBM deployment platform: cloud for IBM Cloud or cpd for IBM Software Hub.",
+          "isRequired": true,
+          "default": "cloud",
+          "choices": ["cloud", "cpd"]
+        },
+        {
+          "name": "API_CLOUD_BASE_URL",
+          "description": "IBM MDM API base URL. Required when M360_TARGET_PLATFORM is cloud."
+        },
+        {
+          "name": "API_CLOUD_AUTH_URL",
+          "description": "IBM Cloud IAM token endpoint. Required when M360_TARGET_PLATFORM is cloud.",
+          "default": "https://iam.cloud.ibm.com/identity/token"
+        },
+        {
+          "name": "API_CLOUD_API_KEY",
+          "description": "IBM Cloud API key. Required when M360_TARGET_PLATFORM is cloud.",
+          "isSecret": true
+        },
+        {
+          "name": "API_CLOUD_CRN",
+          "description": "IBM MDM instance CRN. Required when M360_TARGET_PLATFORM is cloud."
+        },
+        {
+          "name": "API_CPD_BASE_URL",
+          "description": "IBM MDM API base URL on Software Hub. Required when M360_TARGET_PLATFORM is cpd."
+        },
+        {
+          "name": "API_CPD_AUTH_URL",
+          "description": "Software Hub authentication endpoint. Required when M360_TARGET_PLATFORM is cpd."
+        },
+        {
+          "name": "API_USERNAME",
+          "description": "Software Hub username. Required when M360_TARGET_PLATFORM is cpd."
+        },
+        {
+          "name": "API_PASSWORD",
+          "description": "Software Hub password. Required when M360_TARGET_PLATFORM is cpd.",
+          "isSecret": true
+        },
+        {
+          "name": "MCP_TOOLS_MODE",
+          "description": "Tool exposure mode: minimal for core tools or full for all available tools.",
+          "default": "minimal",
+          "choices": ["minimal", "full"]
+        }
+      ]
+    }
+  ]
+}
