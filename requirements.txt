@@ -3,7 +3,7 @@
 # Transitive dependencies will be resolved automatically by pip
 
 # MCP Framework
-fastmcp>=2.14.0
+fastmcp==2.14.7
 
 # Web Framework (required by fastmcp)
 fastapi>=0.121.0
