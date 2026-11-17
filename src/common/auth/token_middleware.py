@@ -10,8 +10,9 @@ Two injection strategies are supported, one per transport:
 HTTP (streamable_http / sse)
     The agentic-AI microservice's TokenInjectingInterceptor stamps the user's IAM
     token into the Authorization header of each MCP tool call.  This middleware
-    reads that header from the Starlette request stored in _current_http_request
-    and stores the bearer token in the per-request ContextVar.
+    reads that header from the Starlette request that delivered the current
+    tool call (via the MCP per-message request context) and stores the bearer
+    token in the per-request ContextVar.
 
 stdio
     HTTP headers are unavailable over stdin/stdout.  Instead, the agentic-AI
@@ -25,10 +26,13 @@ rejected with a PermissionError before any tool handler is invoked.
 """
 
 import logging
+from typing import Optional
+
 import mcp.types as mt
+from starlette.requests import Request
 
 from fastmcp.server.middleware.middleware import CallNext, Middleware, MiddlewareContext
-from fastmcp.tools.base import ToolResult
+from fastmcp.tools.tool import ToolResult
 
 from common.auth.user_token_context import reset_user_token, set_user_token
 
@@ -36,6 +40,27 @@ logger = logging.getLogger(__name__)
 
 # Must match _MDM_STDIO_CRED_KEY in mdm_mcp_tools.py (agentic-AI microservice).
 _MDM_STDIO_CRED_KEY = "__mdm_auth__"
+
+
+def _request_for_current_message(context: MiddlewareContext) -> Optional[Request]:
+    """
+    Return the HTTP request that delivered the MCP message being handled.
+
+    In streamable-HTTP mode the MCP SDK attaches each POST's Starlette request to
+    the message it carries and exposes it via the per-message RequestContext.
+    FastMCP's _current_http_request ContextVar must not be used here: in a
+    stateful session it still holds the session's `initialize` request, so it
+    would authorize every call with the session opener's token.
+
+    Returns None for stdio, where no HTTP request exists.
+    """
+    fastmcp_context = context.fastmcp_context
+    if fastmcp_context is None:
+        return None
+    request_context = fastmcp_context.request_context
+    if request_context is None:
+        return None
+    return request_context.request
 
 
 class UserTokenMiddleware(Middleware):
@@ -58,7 +83,15 @@ class UserTokenMiddleware(Middleware):
 
         reset_token = None
         tool_name = context.message.name
-        http_request = _current_http_request.get()
+        http_request = _request_for_current_message(context)
+
+        if http_request is None and _current_http_request.get() is not None:
+            # HTTP transport, but the HTTP request carrying this message cannot be
+            # resolved. Fail closed rather than fall back to the session-opening
+            # request held in _current_http_request.
+            raise PermissionError(
+                f"Authorization required: unable to resolve HTTP request for tool '{tool_name}'"
+            )
 
         if http_request is not None:
             # ── HTTP transport ──────────────────────────────────────────────
